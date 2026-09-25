@@ -20,16 +20,19 @@ export async function signIn(_prev: ActionState, formData: FormData): Promise<Ac
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data: auth, error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) {
+  if (error || !auth.user) {
     // Mensagem genérica de propósito: não revela se o e-mail existe.
     return { error: 'E-mail ou senha inválidos.' }
   }
 
+  // Filtra pelo próprio id: um ADMIN enxerga todos os profiles, e sem o filtro
+  // a consulta traria várias linhas em vez do registro dele.
   const { data } = await supabase
     .from('profiles')
     .select('active')
+    .eq('id', auth.user.id)
     .maybeSingle<{ active: boolean }>()
 
   if (data && !data.active) {
