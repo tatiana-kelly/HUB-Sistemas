@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 import { Alert } from '@/components/Alert'
 import { SubmitButton } from '@/components/SubmitButton'
+import { Field, inputClass } from '@/components/ui'
 import { signIn, type ActionState } from '@/app/actions/auth'
 
 interface LoginFormProps {
@@ -15,16 +16,13 @@ export function LoginForm({ redirectTo, initialMessage }: LoginFormProps) {
   const [state, formAction] = useActionState<ActionState, FormData>(signIn, {})
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-3.5">
       <input type="hidden" name="redirectTo" value={redirectTo} />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {!state.error && initialMessage && <Alert tone="info">{initialMessage}</Alert>}
 
-      <div className="space-y-1.5">
-        <label htmlFor="email" className="block text-sm font-medium text-ink-700">
-          E-mail
-        </label>
+      <Field label="E-mail" htmlFor="email">
         <input
           id="email"
           name="email"
@@ -33,30 +31,29 @@ export function LoginForm({ redirectTo, initialMessage }: LoginFormProps) {
           autoComplete="email"
           autoFocus
           placeholder="nome@salexpress.com.br"
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
+          className={`${inputClass} py-2.5`}
         />
-      </div>
+      </Field>
 
-      <div className="space-y-1.5">
-        <label htmlFor="password" className="block text-sm font-medium text-ink-700">
-          Senha
-        </label>
+      <Field label="Senha" htmlFor="password">
         <input
           id="password"
           name="password"
           type="password"
           required
           autoComplete="current-password"
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
+          className={`${inputClass} py-2.5`}
         />
+      </Field>
+
+      <div className="pt-1">
+        <SubmitButton pendingLabel="Entrando…">Entrar</SubmitButton>
       </div>
 
-      <SubmitButton pendingLabel="Entrando…">Entrar</SubmitButton>
-
-      <p className="text-center text-sm">
+      <p className="pt-0.5 text-center text-[0.8125rem]">
         <Link
           href="/forgot-password"
-          className="font-medium text-brand-700 underline-offset-2 hover:underline"
+          className="font-medium text-primary underline-offset-2 hover:underline"
         >
           Esqueci minha senha
         </Link>

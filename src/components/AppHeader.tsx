@@ -1,50 +1,50 @@
 import Link from 'next/link'
-import { LogOut, ShieldCheck } from 'lucide-react'
+import { ShieldCheck } from 'lucide-react'
 import { Logo } from '@/components/Logo'
-import { signOut } from '@/app/actions/auth'
+import { UserMenu } from '@/components/UserMenu'
+import { ThemeMenu } from '@/components/theme/ThemeMenu'
+import { buttonClass } from '@/components/ui'
 import type { HubSession } from '@/lib/types'
 
-interface AppHeaderProps {
-  session: HubSession
-}
-
-export function AppHeader({ session }: AppHeaderProps) {
-  const displayName = session.profile.name ?? session.email ?? 'Usuário'
+/**
+ * Cabeçalho do portal. Em telas estreitas o botão de administração recolhe para
+ * dentro do menu do usuário, deixando só identidade, tema e conta na barra.
+ */
+export function AppHeader({ session }: { session: HubSession }) {
+  const displayName = session.profile.name ?? session.email?.split('@')[0] ?? 'Usuário'
 
   return (
-    <header className="sticky top-0 z-20 border-b border-ink-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/home" className="rounded-lg" aria-label="SAL HUB — ir para a página inicial">
-          <Logo withSubtitle />
+    <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur-md">
+      <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/home"
+          aria-label="SAL HUB — ir para a página inicial"
+          className="rounded-[var(--radius-md)]"
+        >
+          {/* Abaixo de 360px o subtítulo sai para o nome e os controles caberem. */}
+          <Logo withSubtitle subtitleClassName="max-[359px]:hidden" />
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden text-right sm:block">
-            <p className="max-w-[16rem] truncate text-sm font-medium text-ink-800">{displayName}</p>
-            <p className="text-xs text-ink-500">{session.profile.role_name ?? 'Sem perfil'}</p>
-          </div>
-
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Wrapper em vez de `hidden` no próprio link: buttonClass já define
+              display, e as duas utilidades competiriam pela mesma propriedade. */}
           {session.isAdmin && (
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-2 text-sm font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700"
-            >
-              <ShieldCheck className="h-4 w-4" aria-hidden="true" strokeWidth={1.75} />
-              <span className="hidden sm:inline">Administração</span>
-              <span className="sr-only sm:hidden">Administração</span>
-            </Link>
+            <span className="hidden lg:block">
+              <Link href="/admin" className={buttonClass('secondary', 'sm')}>
+                <ShieldCheck className="h-4 w-4 text-subtle" strokeWidth={1.75} aria-hidden="true" />
+                Administração
+              </Link>
+            </span>
           )}
 
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" strokeWidth={1.75} />
-              <span className="hidden sm:inline">Sair</span>
-              <span className="sr-only sm:hidden">Sair</span>
-            </button>
-          </form>
+          <ThemeMenu />
+
+          <UserMenu
+            name={displayName}
+            email={session.email}
+            roleName={session.profile.role_name}
+            isAdmin={session.isAdmin}
+          />
         </div>
       </div>
     </header>

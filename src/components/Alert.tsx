@@ -2,27 +2,22 @@ import { AlertCircle, CheckCircle2, Info } from 'lucide-react'
 
 type AlertTone = 'error' | 'success' | 'info'
 
-const TONES: Record<AlertTone, { wrapper: string; Icon: typeof Info }> = {
-  error: { wrapper: 'border-red-200 bg-red-50 text-red-800', Icon: AlertCircle },
-  success: { wrapper: 'border-emerald-200 bg-emerald-50 text-emerald-800', Icon: CheckCircle2 },
-  info: { wrapper: 'border-brand-200 bg-brand-50 text-brand-800', Icon: Info },
+const TONES: Record<AlertTone, { wrapper: string; icon: string; Icon: typeof Info }> = {
+  error: { wrapper: 'bg-danger-soft text-danger', icon: 'text-danger', Icon: AlertCircle },
+  success: { wrapper: 'bg-success-soft text-success', icon: 'text-success', Icon: CheckCircle2 },
+  info: { wrapper: 'bg-primary-soft text-primary-soft-fg', icon: 'text-primary', Icon: Info },
 }
 
-interface AlertProps {
-  tone?: AlertTone
-  children: React.ReactNode
-}
-
-export function Alert({ tone = 'info', children }: AlertProps) {
-  const { wrapper, Icon } = TONES[tone]
+export function Alert({ tone = 'info', children }: { tone?: AlertTone; children: React.ReactNode }) {
+  const { wrapper, icon, Icon } = TONES[tone]
 
   return (
     <div
       role={tone === 'error' ? 'alert' : 'status'}
-      className={`flex items-start gap-2 rounded-lg border px-3.5 py-3 text-sm ${wrapper}`}
+      className={`flex items-start gap-2 rounded-[var(--radius-md)] px-3 py-2.5 text-[0.8125rem] font-medium ${wrapper}`}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={2} />
-      <span>{children}</span>
+      <Icon className={`mt-px h-4 w-4 shrink-0 ${icon}`} aria-hidden="true" strokeWidth={2} />
+      <span className="min-w-0">{children}</span>
     </div>
   )
 }

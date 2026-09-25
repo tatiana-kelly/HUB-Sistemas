@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Search, SearchX } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Search, SearchX, X } from 'lucide-react'
 import { SystemCard } from '@/components/SystemCard'
+import { EmptyState, SectionHeading } from '@/components/ui'
 import { filterSystems } from '@/lib/access'
 import type { SystemWithCategory } from '@/lib/types'
 
@@ -12,79 +13,149 @@ interface SystemsBrowserProps {
   categories: string[]
 }
 
-/** Busca em tempo real + filtro por categoria sobre os sistemas já autorizados. */
+/**
+ * Catálogo de sistemas: busca em tempo real, filtro por categoria com contagem e
+ * grade que adensa conforme a largura — pensada para continuar organizada com
+ * dezenas de sistemas, não só com cinco.
+ */
 export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrowserProps) {
   const [term, setTerm] = useState('')
   const [category, setCategory] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const favorites = useMemo(() => new Set(favoriteIds), [favoriteIds])
   const visible = useMemo(() => filterSystems(systems, term, category), [systems, term, category])
 
-  const filters: { label: string; value: string | null }[] = [
-    { label: 'Todos', value: null },
-    ...categories.map((name) => ({ label: name, value: name })),
+  // Ctrl/⌘ + K foca a busca. Ignorado quando o foco já está num campo, para não
+  // atrapalhar quem digita em um formulário.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'k' || !(event.metaKey || event.ctrlKey)) return
+
+      const active = document.activeElement
+      const isTyping =
+        active instanceof HTMLElement &&
+        (active.tagName === 'TEXTAREA' ||
+          active.isContentEditable ||
+          (active.tagName === 'INPUT' && active !== inputRef.current))
+
+      if (isTyping) return
+
+      event.preventDefault()
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  const filters: { label: string; value: string | null; count: number }[] = [
+    { label: 'Todos', value: null, count: systems.length },
+    ...categories.map((name) => ({
+      label: name,
+      value: name,
+      count: systems.filter((system) => system.category_name === name).length,
+    })),
   ]
 
   return (
     <section aria-labelledby="sistemas-heading">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 id="sistemas-heading" className="text-lg font-semibold text-ink-900">
-          Sistemas e Indicadores
-        </h2>
+      <SectionHeading
+        id="sistemas-heading"
+        aside={
+          <span className="text-xs text-subtle tabular-nums">
+            {visible.length} de {systems.length}
+          </span>
+        }
+      >
+        Sistemas e indicadores
+      </SectionHeading>
 
-        <div className="relative w-full sm:max-w-xs">
+      <div className="mt-2.5 flex flex-col gap-2.5 lg:flex-row lg:items-center">
+        <div className="relative lg:w-80 lg:shrink-0">
           <Search
-            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-400"
+            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-subtle"
             aria-hidden="true"
           />
           <label htmlFor="busca-sistemas" className="sr-only">
             Buscar sistema ou indicador
           </label>
           <input
+            ref={inputRef}
             id="busca-sistemas"
             type="search"
             value={term}
             onChange={(event) => setTerm(event.target.value)}
             placeholder="Buscar sistema ou indicador..."
             autoComplete="off"
-            className="w-full rounded-lg border border-ink-200 bg-white py-2 pr-3 pl-9 text-sm text-ink-800 placeholder:text-ink-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:outline-none"
+            className="h-9.5 w-full rounded-[var(--radius-md)] border border-line bg-surface pr-16 pl-9 text-sm text-fg transition-colors placeholder:text-subtle hover:border-line-strong focus:border-line-accent focus:outline-none"
           />
-        </div>
-      </div>
 
-      <div
-        role="group"
-        aria-label="Filtrar por categoria"
-        className="mt-4 -mx-1 flex flex-wrap gap-2 px-1"
-      >
-        {filters.map((filter) => {
-          const isActive = category === filter.value
-          return (
+          {term ? (
             <button
-              key={filter.label}
               type="button"
-              aria-pressed={isActive}
-              onClick={() => setCategory(filter.value)}
-              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'border-brand-700 bg-brand-700 text-white'
-                  : 'border-ink-200 bg-white text-ink-600 hover:border-brand-300 hover:text-brand-700'
-              }`}
+              onClick={() => {
+                setTerm('')
+                inputRef.current?.focus()
+              }}
+              aria-label="Limpar busca"
+              className="absolute top-1/2 right-2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-[var(--radius-xs)] text-subtle transition-colors hover:bg-hover hover:text-fg"
             >
-              {filter.label}
+              <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             </button>
-          )
-        })}
+          ) : (
+            <kbd
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-line bg-sunken px-1.5 py-0.5 font-sans text-[0.6875rem] font-medium text-subtle lg:block"
+            >
+              Ctrl K
+            </kbd>
+          )}
+        </div>
+
+        <div
+          role="group"
+          aria-label="Filtrar por categoria"
+          className="hub-scroll-x -mx-0.5 flex gap-1.5 px-0.5 pb-0.5"
+        >
+          {filters.map((filter) => {
+            const isActive = category === filter.value
+            return (
+              <button
+                key={filter.label}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setCategory(filter.value)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8125rem] font-medium transition-colors ${
+                  isActive
+                    ? 'bg-inverse text-on-inverse'
+                    : 'text-muted hover:bg-hover hover:text-fg'
+                }`}
+              >
+                {filter.label}
+                <span
+                  className={`text-[0.6875rem] tabular-nums ${isActive ? 'opacity-60' : 'text-subtle'}`}
+                >
+                  {filter.count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {visible.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-dashed border-ink-200 bg-white/60 px-6 py-12 text-center">
-          <SearchX className="h-6 w-6 text-ink-400" aria-hidden="true" />
-          <p className="text-sm font-medium text-ink-700">Nenhum sistema encontrado.</p>
-          <p className="text-sm text-ink-500">Ajuste a busca ou troque o filtro de categoria.</p>
+        <div className="mt-4">
+          <EmptyState
+            icon={<SearchX className="h-5 w-5" aria-hidden="true" strokeWidth={1.75} />}
+            title="Nenhum sistema encontrado."
+          >
+            Ajuste a busca ou troque o filtro de categoria.
+          </EmptyState>
         </div>
       ) : (
-        <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {visible.map((system) => (
             <li key={system.id} className="flex">
               <SystemCard system={system} isFavorite={favorites.has(system.id)} />

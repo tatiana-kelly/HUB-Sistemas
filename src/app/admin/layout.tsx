@@ -12,26 +12,30 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await requireAdmin()
 
   return (
-    <div className="hub-backdrop min-h-dvh">
+    <div className="hub-ambient min-h-dvh">
       <AppHeader session={session} />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[1600px] px-4 pt-6 pb-12 sm:px-6 lg:px-8">
         <Link
           href="/home"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-brand-700"
+          className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted transition-colors hover:text-primary"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" strokeWidth={1.75} />
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={2} />
           Voltar ao portal
         </Link>
 
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink-900">Administração</h1>
-        <p className="mt-1 text-sm text-ink-500">
-          Usuários, sistemas, categorias, permissões e auditoria de acessos.
-        </p>
+        <div className="mt-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-fg sm:text-[1.375rem]">
+            Administração
+          </h1>
+          <p className="text-[0.8125rem] text-muted">
+            Usuários, sistemas, categorias, permissões e auditoria
+          </p>
+        </div>
 
         <AdminNav />
 
-        <div className="mt-6">{children}</div>
+        <div className="mt-5">{children}</div>
       </main>
     </div>
   )

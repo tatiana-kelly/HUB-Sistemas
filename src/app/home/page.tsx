@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import { Clock, Star } from 'lucide-react'
+import { History } from 'lucide-react'
 import { AppHeader } from '@/components/AppHeader'
 import { Alert } from '@/components/Alert'
-import { SystemCard } from '@/components/SystemCard'
+import { FavoritesStrip } from '@/components/FavoritesStrip'
 import { SystemsBrowser } from '@/components/SystemsBrowser'
 import { SystemIcon } from '@/components/SystemIcon'
+import { SectionHeading } from '@/components/ui'
 import { requireSession } from '@/lib/auth'
 import {
   getCategories,
@@ -51,57 +52,34 @@ export default async function HomePage({
   const notice = params.erro ? MESSAGES[params.erro] : undefined
 
   return (
-    <div className="hub-backdrop min-h-dvh">
+    <div className="hub-ambient min-h-dvh">
       <AppHeader session={session} />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-3">
-          {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
-          {params.senha === 'atualizada' && (
-            <Alert tone="success">Senha atualizada com sucesso.</Alert>
-          )}
+      <main className="mx-auto w-full max-w-[1600px] px-4 pt-6 pb-12 sm:px-6 lg:px-8">
+        {(notice || params.senha === 'atualizada') && (
+          <div className="mb-5 space-y-2">
+            {notice && <Alert tone={notice.tone}>{notice.text}</Alert>}
+            {params.senha === 'atualizada' && (
+              <Alert tone="success">Senha atualizada com sucesso.</Alert>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h1 className="text-xl font-semibold tracking-tight text-fg sm:text-[1.375rem]">
+            {greeting()}, {firstName(session.profile.name, session.email)}
+          </h1>
+          <p className="text-[0.8125rem] text-muted">
+            {systems.length} {systems.length === 1 ? 'acesso disponível' : 'acessos disponíveis'}{' '}
+            para o seu perfil
+          </p>
         </div>
 
-        <section className="mt-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-            {greeting()}, {firstName(session.profile.name, session.email)} 👋
-          </h1>
-          <p className="mt-1 text-sm text-ink-500">
-            Acesse rapidamente os sistemas disponíveis para você.
-          </p>
-        </section>
+        <div className="mt-6">
+          <FavoritesStrip systems={favorites} />
+        </div>
 
-        <section aria-labelledby="favoritos-heading" className="mt-8">
-          <h2
-            id="favoritos-heading"
-            className="flex items-center gap-2 text-lg font-semibold text-ink-900"
-          >
-            <Star
-              className="h-4.5 w-4.5 text-accent-500"
-              fill="currentColor"
-              aria-hidden="true"
-              strokeWidth={1.5}
-            />
-            Meus acessos
-          </h2>
-
-          {favorites.length === 0 ? (
-            <p className="mt-3 rounded-[var(--radius-card)] border border-dashed border-ink-200 bg-white/60 px-5 py-6 text-sm text-ink-500">
-              Você ainda não adicionou favoritos. Toque na estrela de um sistema para deixá-lo
-              sempre à mão.
-            </p>
-          ) : (
-            <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {favorites.map((system) => (
-                <li key={system.id} className="flex">
-                  <SystemCard system={system} isFavorite />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <div className="mt-10">
+        <div className="mt-7">
           <SystemsBrowser
             systems={systems}
             favoriteIds={favoriteIds}
@@ -110,34 +88,31 @@ export default async function HomePage({
         </div>
 
         {lastAccesses.length > 0 && (
-          <section aria-labelledby="ultimos-heading" className="mt-10">
-            <h2
+          <section aria-labelledby="ultimos-heading" className="mt-8">
+            <SectionHeading
               id="ultimos-heading"
-              className="flex items-center gap-2 text-lg font-semibold text-ink-900"
+              icon={<History className="h-4 w-4 text-subtle" aria-hidden="true" strokeWidth={1.75} />}
             >
-              <Clock className="h-4.5 w-4.5 text-ink-400" aria-hidden="true" strokeWidth={1.75} />
               Últimos acessos
-            </h2>
+            </SectionHeading>
 
-            <ul className="mt-4 divide-y divide-ink-100 overflow-hidden rounded-[var(--radius-card)] border border-ink-200 bg-white shadow-[var(--shadow-card)]">
+            <ul className="mt-2.5 grid grid-cols-1 gap-x-6 sm:grid-cols-2 xl:grid-cols-4">
               {lastAccesses.map((entry) => {
                 const system = systems.find((item) => item.id === entry.system_id)
                 return (
                   <li
                     key={entry.id}
-                    className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5"
+                    className="flex items-center justify-between gap-3 border-b border-line py-2"
                   >
-                    <span className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink-100 text-ink-500">
-                        <SystemIcon icon={system?.icon ?? null} className="h-4 w-4" />
-                      </span>
-                      <span className="truncate text-sm font-medium text-ink-800">
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <SystemIcon icon={system?.icon ?? null} className="h-3.5 w-3.5 shrink-0 text-subtle" />
+                      <span className="truncate text-[0.8125rem] text-fg">
                         {entry.system_name ?? 'Sistema removido'}
                       </span>
                     </span>
                     <time
                       dateTime={entry.accessed_at}
-                      className="shrink-0 text-xs text-ink-500 tabular-nums"
+                      className="shrink-0 text-xs text-subtle tabular-nums"
                     >
                       {formatAccessMoment(entry.accessed_at)}
                     </time>

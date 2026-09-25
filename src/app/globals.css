@@ -1,72 +1,252 @@
 @import 'tailwindcss';
 
-/* ─── Identidade visual do SAL HUB ──────────────────────────────────────────
-   Portal corporativo: superfícies claras, tipografia sóbria, azul institucional
-   como cor de ação. Deliberadamente sem aparência de dashboard de BI.
-   ------------------------------------------------------------------------- */
-@theme {
-  --color-brand-50: #eef5fb;
-  --color-brand-100: #d6e6f5;
-  --color-brand-200: #adcdea;
-  --color-brand-300: #7eaeda;
-  --color-brand-400: #4f8cc7;
-  --color-brand-500: #2d6cad;
-  --color-brand-600: #1f548b;
-  --color-brand-700: #17416d;
-  --color-brand-800: #113152;
-  --color-brand-900: #0b2138;
+/* ══════════════════════════════════════════════════════════════════════════
+   SAL HUB — Design System
 
-  --color-ink-50: #f7f8fa;
-  --color-ink-100: #eef0f4;
-  --color-ink-200: #dfe3ea;
-  --color-ink-300: #c3cad6;
-  --color-ink-400: #8e99ab;
-  --color-ink-500: #667286;
-  --color-ink-600: #4b5768;
-  --color-ink-700: #374250;
-  --color-ink-800: #232c37;
-  --color-ink-900: #141a22;
+   Um único conjunto de tokens semânticos alimenta light e dark. Os componentes
+   referenciam sempre o papel (surface, border, text-muted), nunca a cor bruta —
+   por isso o dark mode é um tema desenhado, não uma inversão.
+   ══════════════════════════════════════════════════════════════════════════ */
 
-  --color-accent-500: #d98324;
-  --color-accent-600: #b96a15;
+/* Dark controlado por atributo: o tema segue a escolha do usuário, e o modo
+   "automático" resolve para light/dark antes da primeira pintura. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* superfícies */
+  --app-bg: #f4f6f9;
+  --app-bg-accent: 29 88 148;
+  --surface: #ffffff;
+  --surface-sunken: #eef1f6;
+  --surface-hover: #f8fafc;
+  --surface-inverse: #131a24;
+
+  /* traços */
+  --border: #e2e7ee;
+  --border-strong: #cfd7e2;
+  --border-accent: #9cc0e4;
+
+  /* texto */
+  --text: #111823;
+  --text-muted: #4d5869;
+  --text-subtle: #636f80;
+  --text-inverse: #f7f9fc;
+
+  /* identidade SAL */
+  --primary: #17416d;
+  --primary-hover: #0f3055;
+  --primary-soft: #e8f0f9;
+  --primary-soft-text: #1b558e;
+  --primary-ring: #2d6cad;
+
+  /* acentos de estado */
+  --accent: #9d5b0c;
+  --accent-soft: #fdf3e5;
+  --success: #17754f;
+  --success-soft: #e6f5ee;
+  --warning: #9a6407;
+  --warning-soft: #fdf4e3;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+
+  --skeleton: #e7ebf1;
+
+  --shadow-sm: 0 1px 2px rgb(17 24 35 / 0.05);
+  --shadow-md: 0 1px 2px rgb(17 24 35 / 0.05), 0 8px 20px -12px rgb(17 24 35 / 0.18);
+  --shadow-lg: 0 2px 4px rgb(17 24 35 / 0.06), 0 18px 36px -18px rgb(23 65 109 / 0.32);
+  --shadow-pop: 0 12px 32px -8px rgb(17 24 35 / 0.18), 0 2px 8px -2px rgb(17 24 35 / 0.1);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --app-bg: #0b1017;
+  --app-bg-accent: 92 152 214;
+  --surface: #141b25;
+  --surface-sunken: #0f151d;
+  --surface-hover: #1a2431;
+  --surface-inverse: #eef2f7;
+
+  --border: #232d3b;
+  --border-strong: #32405288;
+  --border-accent: #35618f;
+
+  --text: #e8edf4;
+  --text-muted: #9aa6b7;
+  --text-subtle: #828fa1;
+  --text-inverse: #101722;
+
+  --primary: #4d8fd0;
+  --primary-hover: #64a1dd;
+  --primary-soft: #16283c;
+  --primary-soft-text: #8ebdea;
+  --primary-ring: #4d8fd0;
+
+  --accent: #e0a458;
+  --accent-soft: #2d2213;
+  --success: #52c295;
+  --success-soft: #11291f;
+  --warning: #dda94f;
+  --warning-soft: #2a2213;
+  --danger: #f0837a;
+  --danger-soft: #331a18;
+
+  --skeleton: #1c2634;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 20px -12px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.45), 0 18px 36px -18px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 12px 32px -8px rgb(0 0 0 / 0.7), 0 2px 8px -2px rgb(0 0 0 / 0.5);
+}
+
+/* Expõe os tokens como utilitários (bg-surface, text-muted, border-subtle…). */
+@theme inline {
+  --color-app: var(--app-bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-hover: var(--surface-hover);
+  --color-inverse: var(--surface-inverse);
+
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-line-accent: var(--border-accent);
+
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-on-inverse: var(--text-inverse);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-fg: var(--primary-soft-text);
+  --color-ring: var(--primary-ring);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-skeleton: var(--skeleton);
+
+  --shadow-e1: var(--shadow-sm);
+  --shadow-e2: var(--shadow-md);
+  --shadow-e3: var(--shadow-lg);
+  --shadow-pop: var(--shadow-pop);
 
   --font-sans:
-    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --radius-card: 14px;
-  --shadow-card: 0 1px 2px rgb(20 26 34 / 0.05), 0 8px 24px -12px rgb(20 26 34 / 0.12);
-  --shadow-card-hover: 0 2px 4px rgb(20 26 34 / 0.06), 0 16px 32px -16px rgb(17 49 82 / 0.28);
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
 }
 
-:root {
-  color-scheme: light;
-}
+/* ─── base ────────────────────────────────────────────────────────────────── */
 
-html,
-body {
-  height: 100%;
+html {
+  background-color: var(--app-bg);
 }
 
 body {
-  background-color: var(--color-ink-50);
-  color: var(--color-ink-800);
+  min-height: 100dvh;
+  background-color: var(--app-bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Foco sempre visível — requisito de acessibilidade do portal. */
+/* Foco sempre visível e com a mesma assinatura em toda a aplicação. */
 :focus-visible {
-  outline: 2px solid var(--color-brand-500);
+  outline: 2px solid var(--primary-ring);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-/* Fundo institucional discreto da área autenticada. */
-.hub-backdrop {
-  background-image:
-    radial-gradient(60rem 30rem at 12% -8%, rgb(45 108 173 / 0.10), transparent 60%),
-    radial-gradient(48rem 24rem at 96% -14%, rgb(217 131 36 / 0.08), transparent 55%);
+::selection {
+  background-color: var(--primary-soft);
+  color: var(--primary-soft-text);
+}
+
+/* O `search` do Chrome desenha um X próprio que briga com o nosso ícone. */
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* ─── ambiente ────────────────────────────────────────────────────────────── */
+
+/* Luz institucional muito sutil no topo — dá profundidade sem “tema colorido”. */
+.hub-ambient {
+  position: relative;
+  isolation: isolate;
+}
+
+.hub-ambient::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  height: 22rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      44rem 18rem at 18% -6rem,
+      rgb(var(--app-bg-accent) / 0.13),
+      transparent 70%
+    ),
+    radial-gradient(34rem 14rem at 88% -8rem, rgb(var(--app-bg-accent) / 0.08), transparent 68%);
+}
+
+/* ─── utilitários compartilhados ──────────────────────────────────────────── */
+
+.hub-scroll-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  scroll-snap-type: x proximity;
+}
+
+.hub-scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+.hub-scroll-x::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 999px;
+}
+
+.hub-skeleton {
+  background-color: var(--skeleton);
+  border-radius: var(--radius-sm);
+  animation: hub-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes hub-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Expande o clique para o card inteiro sem aninhar elementos interativos. */
+.hub-stretch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -74,6 +254,8 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

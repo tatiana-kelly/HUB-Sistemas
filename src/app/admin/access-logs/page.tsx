@@ -6,6 +6,7 @@ import {
   Field,
   Panel,
   TableWrapper,
+  buttonClass,
   inputClass,
   selectClass,
   tdClass,
@@ -41,10 +42,10 @@ export default async function AdminAccessLogsPage({
   ])
 
   return (
-    <div className="space-y-6">
-      <Panel title="Filtros" description="A consulta é feita no servidor, com RLS restrito a ADMIN.">
+    <div className="space-y-4">
+      <Panel title="Filtros" description="A consulta roda no servidor, com RLS restrito a ADMIN.">
         {/* GET simples: os filtros ficam na URL e podem ser compartilhados. */}
-        <form className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        <form className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
           <Field label="Usuário" htmlFor="filtro-usuario">
             <select
               id="filtro-usuario"
@@ -98,10 +99,7 @@ export default async function AdminAccessLogsPage({
           </Field>
 
           <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
-            >
+            <button type="submit" className={`${buttonClass('primary')} w-full`}>
               Filtrar
             </button>
           </div>
@@ -110,7 +108,9 @@ export default async function AdminAccessLogsPage({
 
       <Panel title="Acessos registrados" description={`${logs.length} registros exibidos`}>
         {logs.length === 0 ? (
-          <EmptyState>Nenhum acesso registrado para os filtros selecionados.</EmptyState>
+          <EmptyState title="Nenhum acesso registrado para os filtros selecionados.">
+            Ajuste o período ou limpe os filtros para ver o histórico completo.
+          </EmptyState>
         ) : (
           <TableWrapper>
             <thead>
@@ -128,7 +128,7 @@ export default async function AdminAccessLogsPage({
                 return (
                   <tr key={log.id}>
                     <td className={`${tdClass} font-medium`}>{log.user_name ?? '—'}</td>
-                    <td className={`${tdClass} text-ink-600`}>{log.user_email ?? '—'}</td>
+                    <td className={`${tdClass} text-muted`}>{log.user_email ?? '—'}</td>
                     <td className={tdClass}>{log.system_name ?? '—'}</td>
                     <td className={`${tdClass} tabular-nums`}>
                       {moment.toLocaleDateString('pt-BR')}

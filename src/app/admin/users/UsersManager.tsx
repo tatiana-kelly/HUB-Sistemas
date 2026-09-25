@@ -6,11 +6,12 @@ import { UserPlus } from 'lucide-react'
 import { Alert } from '@/components/Alert'
 import { SubmitButton } from '@/components/SubmitButton'
 import {
-  Badge,
   EmptyState,
   Field,
   Panel,
+  StatusDot,
   TableWrapper,
+  buttonClass,
   inputClass,
   selectClass,
   tdClass,
@@ -40,16 +41,16 @@ export function UsersManager({
   const feedback = [roleState, activeState].find((state) => state.error || state.success)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Panel
         title="Novo usuário"
-        description="O usuário recebe um convite por e-mail e define a própria senha. Nenhuma senha é criada aqui."
+        description="O usuário recebe um convite por e-mail e define a própria senha."
       >
         {!serviceRoleAvailable && (
           <div className="mb-4">
             <Alert tone="info">
               Para convidar usuários pelo portal, configure a variável de servidor
-              <code className="mx-1 rounded bg-white px-1 py-0.5 text-xs">
+              <code className="mx-1 rounded bg-surface px-1 py-0.5 text-xs">
                 SUPABASE_SERVICE_ROLE_KEY
               </code>
               . Sem ela, os usuários precisam ser criados no painel do Supabase.
@@ -57,11 +58,11 @@ export function UsersManager({
           </div>
         )}
 
-        <form action={createAction} className="space-y-4">
+        <form action={createAction} className="space-y-3.5">
           {createState.error && <Alert tone="error">{createState.error}</Alert>}
           {createState.success && <Alert tone="success">{createState.success}</Alert>}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
             <Field label="Nome" htmlFor="new-user-name">
               <input id="new-user-name" name="name" required className={inputClass} />
             </Field>
@@ -89,12 +90,10 @@ export function UsersManager({
             </Field>
           </div>
 
-          <div className="sm:w-56">
-            <SubmitButton pendingLabel="Convidando…">
-              <UserPlus className="h-4 w-4" aria-hidden="true" strokeWidth={1.75} />
-              Convidar usuário
-            </SubmitButton>
-          </div>
+          <SubmitButton full={false} pendingLabel="Convidando…">
+            <UserPlus className="h-4 w-4" aria-hidden="true" strokeWidth={1.75} />
+            Convidar usuário
+          </SubmitButton>
         </form>
       </Panel>
 
@@ -108,7 +107,7 @@ export function UsersManager({
         )}
 
         {profiles.length === 0 ? (
-          <EmptyState>Nenhum usuário cadastrado ainda.</EmptyState>
+          <EmptyState title="Nenhum usuário cadastrado ainda." />
         ) : (
           <TableWrapper>
             <thead>
@@ -126,17 +125,17 @@ export function UsersManager({
                   <td className={tdClass}>
                     <Link
                       href={`/admin/users/${profile.id}`}
-                      className="font-medium text-brand-700 underline-offset-2 hover:underline"
+                      className="font-medium text-primary underline-offset-2 hover:underline"
                     >
                       {profile.name ?? '—'}
                     </Link>
                     {profile.id === currentUserId && (
-                      <span className="ml-2 text-xs text-ink-400">(você)</span>
+                      <span className="ml-2 text-xs text-subtle">(você)</span>
                     )}
                   </td>
-                  <td className={`${tdClass} text-ink-600`}>{profile.email ?? '—'}</td>
+                  <td className={`${tdClass} text-muted`}>{profile.email ?? '—'}</td>
                   <td className={tdClass}>
-                    <form action={roleAction} className="flex items-center gap-2">
+                    <form action={roleAction} className="flex items-center gap-1.5">
                       <input type="hidden" name="user_id" value={profile.id} />
                       <label className="sr-only" htmlFor={`role-${profile.id}`}>
                         Perfil de {profile.name ?? profile.email}
@@ -145,7 +144,7 @@ export function UsersManager({
                         id={`role-${profile.id}`}
                         name="role_id"
                         defaultValue={profile.role_id ?? ''}
-                        className={`${selectClass} w-40 py-1.5`}
+                        className={`${selectClass} h-8 w-36 py-0`}
                       >
                         <option value="">Sem perfil</option>
                         {roles.map((role) => (
@@ -154,20 +153,13 @@ export function UsersManager({
                           </option>
                         ))}
                       </select>
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-ink-200 px-2.5 py-1.5 text-xs font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700"
-                      >
+                      <button type="submit" className={buttonClass('secondary', 'sm')}>
                         Salvar
                       </button>
                     </form>
                   </td>
                   <td className={tdClass}>
-                    {profile.active ? (
-                      <Badge tone="success">Ativo</Badge>
-                    ) : (
-                      <Badge tone="muted">Inativo</Badge>
-                    )}
+                    <StatusDot active={profile.active} />
                   </td>
                   <td className={`${tdClass} text-right`}>
                     <form action={activeAction} className="inline">
@@ -176,7 +168,7 @@ export function UsersManager({
                       <button
                         type="submit"
                         disabled={profile.id === currentUserId}
-                        className="rounded-lg border border-ink-200 px-2.5 py-1.5 text-xs font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        className={buttonClass('secondary', 'sm')}
                       >
                         {profile.active ? 'Desativar' : 'Ativar'}
                       </button>

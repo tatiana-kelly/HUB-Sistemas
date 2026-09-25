@@ -16,6 +16,7 @@ favoritos, histórico e administração.
 ## Sumário
 
 - [Arquitetura](#arquitetura)
+- [Design system e temas](#design-system-e-temas)
 - [Stack](#stack)
 - [Estrutura do banco](#estrutura-do-banco)
 - [Segurança e RLS](#segurança-e-rls)
@@ -80,13 +81,43 @@ tests/                      testes unitários (Vitest)
 
 ---
 
+## Design system e temas
+
+A interface é montada sobre tokens semânticos, não sobre cores soltas. Cada
+token descreve um papel (`surface`, `line`, `fg`, `muted`, `primary`, `danger`…)
+e é redefinido por tema em `src/app/globals.css`. Os componentes referenciam só o
+papel — por isso o dark mode é um tema desenhado, e não uma inversão do claro.
+
+| Camada | Onde | Papel |
+|---|---|---|
+| Tokens | `src/app/globals.css` | superfícies, traços, texto, identidade, estados, sombras, raios |
+| Primitivos | `src/components/ui.tsx` | `buttonClass`, `inputClass`, `Field`, `Panel`, `Badge`, `StatusDot`, `EmptyState`, `Skeleton`, tabela |
+| Composições | `SystemCard`, `SystemsBrowser`, `FavoritesStrip`, `AppHeader`, `UserMenu`, `Menu` | telas do portal e da administração |
+
+**Tema claro / escuro / automático.** A escolha fica no menu do usuário e no
+ícone do cabeçalho, e é gravada em `localStorage` (`sal-hub-theme`). Um script
+inline (`THEME_BOOTSTRAP_SCRIPT`) aplica o tema no `<html>` antes da primeira
+pintura, então não existe flash claro ao recarregar nem ao navegar. No modo
+automático a interface acompanha o sistema operacional em tempo real; uma escolha
+explícita prevalece sobre ele. A preferência é por dispositivo e sobrevive a
+logout e login.
+
+**Acessibilidade.** Todos os pares de texto sobre fundo dos dois temas ficam em
+4.5:1 ou acima; estado nunca depende só de cor (o status usa ponto + rótulo); o
+foco tem a mesma assinatura em toda a aplicação; os menus fecham com `Esc`,
+navegam por setas e devolvem o foco ao gatilho; e `prefers-reduced-motion`
+desliga as transições.
+
+---
+
 ## Stack
 
 - **Next.js 16** (App Router, Server Components, Server Actions, Turbopack)
 - **React 19** e **TypeScript** em modo estrito
-- **Tailwind CSS 4** com tokens de design próprios
+- **Tailwind CSS 4** com tokens semânticos próprios e dark mode por atributo
 - **Supabase**: Postgres, Auth e Row Level Security
-- **lucide-react** para ícones
+- **lucide-react** para ícones (traço único em toda a interface)
+- **Inter** via `next/font` (self-hosted, sem requisição externa)
 - **Vitest** para os testes unitários
 - **ESLint** (`next/core-web-vitals` + `next/typescript`)
 
@@ -276,6 +307,10 @@ npm run verify      # os quatro acima, em sequência
 `tests/access.test.ts` cobre a lógica pura de apresentação: busca tolerante a
 acento, filtro por categoria, agrupamento, saudação, formatação dos últimos
 acessos, deduplicação do histórico e validação de URL externa.
+
+`tests/theme.test.ts` cobre a resolução de tema e o script de bootstrap — a
+escolha explícita prevalecendo sobre o sistema, o modo automático seguindo o
+sistema e o comportamento com storage vazio ou corrompido.
 
 As regras de acesso são verificadas no próprio banco, assumindo a identidade de
 cada perfil e medindo o que ele consegue ler e escrever. Cenários cobertos:
