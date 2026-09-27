@@ -34,7 +34,8 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
 
   useEffect(() => {
     if (!pulso) return
-    const id = window.setTimeout(() => setPulso(false), 360)
+    // Acompanha a duração de .hub-pop, com uma folga para o fim da animação.
+    const id = window.setTimeout(() => setPulso(false), 280)
     return () => window.clearTimeout(id)
   }, [pulso])
 
