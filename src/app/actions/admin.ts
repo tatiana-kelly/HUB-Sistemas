@@ -45,10 +45,18 @@ export async function saveSystem(_prev: ActionState, formData: FormData): Promis
   if (!name) return { error: 'Informe o nome do sistema.' }
   if (!isSafeExternalUrl(url)) return { error: 'Informe uma URL válida iniciando com http ou https.' }
 
+  // A marca aceita caminho interno (/marcas/x.svg) ou URL http(s) — nunca um
+  // esquema executável como javascript: ou data:.
+  const logoUrl = optionalText(formData, 'logo_url')
+  if (logoUrl && !logoUrl.startsWith('/') && !isSafeExternalUrl(logoUrl)) {
+    return { error: 'A marca deve ser um caminho interno (/marcas/...) ou uma URL http(s).' }
+  }
+
   const payload = {
     name,
     description: optionalText(formData, 'description'),
     url,
+    logo_url: logoUrl,
     icon: optionalText(formData, 'icon'),
     category_id: optionalText(formData, 'category_id'),
     type: text(formData, 'type') === 'indicator' ? 'indicator' : 'system',

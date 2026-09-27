@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { ArrowUpRight, Loader2, Star } from 'lucide-react'
-import { SystemIcon } from '@/components/SystemIcon'
+import { useEffect, useRef, useState, useTransition } from 'react'
+import { ArrowUpRight, Star } from 'lucide-react'
+import { SystemBrand } from '@/components/SystemBrand'
 import { registerSystemAccess, toggleFavorite } from '@/app/actions/portal'
 import type { SystemWithCategory } from '@/lib/types'
 
 interface SystemCardProps {
   system: SystemWithCategory
   isFavorite: boolean
+  /** Posição na grade — escalona a entrada em cascata. */
+  index?: number
 }
 
 /**
@@ -19,11 +21,22 @@ interface SystemCardProps {
  * O clique não navega pela URL direto: chama o servidor, que revalida a
  * permissão, grava o access_log e devolve a URL para abrir em nova aba.
  */
-export function SystemCard({ system, isFavorite }: SystemCardProps) {
+export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
   const [favorite, setFavorite] = useState(isFavorite)
   const [error, setError] = useState<string | null>(null)
   const [isOpening, startOpening] = useTransition()
   const [, startFavoriting] = useTransition()
+
+  // Só anima a estrela depois da primeira interação: sem isso, todos os
+  // favoritos "pipocariam" ao carregar a página.
+  const interagiu = useRef(false)
+  const [pulso, setPulso] = useState(false)
+
+  useEffect(() => {
+    if (!pulso) return
+    const id = window.setTimeout(() => setPulso(false), 360)
+    return () => window.clearTimeout(id)
+  }, [pulso])
 
   const isIndicator = system.type === 'indicator'
 
@@ -41,7 +54,10 @@ export function SystemCard({ system, isFavorite }: SystemCardProps) {
 
   function handleFavorite() {
     const next = !favorite
+    interagiu.current = true
     setFavorite(next)
+    if (next) setPulso(true)
+
     startFavoriting(async () => {
       try {
         await toggleFavorite(system.id, favorite)
@@ -53,17 +69,14 @@ export function SystemCard({ system, isFavorite }: SystemCardProps) {
   }
 
   return (
-    <article className="group relative flex h-full w-full flex-col rounded-[var(--radius-lg)] border border-line bg-surface p-3.5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-accent hover:shadow-e3 focus-within:border-line-accent focus-within:shadow-e3">
+    <article
+      style={{ '--index': index } as React.CSSProperties}
+      className={`hub-rise group relative flex h-full w-full flex-col rounded-[var(--radius-lg)] border border-line bg-surface p-3.5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-accent hover:shadow-e3 focus-within:border-line-accent focus-within:shadow-e3 ${
+        isOpening ? 'hub-progress' : ''
+      }`}
+    >
       <div className="flex items-start gap-3">
-        <span
-          className={`grid h-9 w-9 shrink-0 place-items-center rounded-[var(--radius-md)] transition-colors duration-200 ${
-            isIndicator
-              ? 'bg-accent-soft text-accent'
-              : 'bg-sunken text-muted group-hover:bg-primary-soft group-hover:text-primary-soft-fg'
-          }`}
-        >
-          <SystemIcon icon={system.icon} className="h-4.5 w-4.5" />
-        </span>
+        <SystemBrand name={system.name} url={system.url} logoUrl={system.logo_url} />
 
         <div className="min-w-0 flex-1 pr-7">
           <h3 className="truncate text-[0.9375rem] leading-tight font-semibold text-fg">
@@ -84,10 +97,17 @@ export function SystemCard({ system, isFavorite }: SystemCardProps) {
           favorite ? `Remover ${system.name} dos favoritos` : `Adicionar ${system.name} aos favoritos`
         }
         className={`absolute top-2.5 right-2.5 z-20 grid h-7 w-7 place-items-center rounded-[var(--radius-sm)] transition-colors ${
-          favorite ? 'text-accent' : 'text-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-accent'
+          favorite
+            ? 'text-accent'
+            : 'text-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-accent'
         }`}
       >
-        <Star className="h-4 w-4" strokeWidth={1.75} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />
+        <Star
+          className={`h-4 w-4 ${pulso ? 'hub-pop' : ''}`}
+          strokeWidth={1.75}
+          fill={favorite ? 'currentColor' : 'none'}
+          aria-hidden="true"
+        />
       </button>
 
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5">
@@ -103,17 +123,13 @@ export function SystemCard({ system, isFavorite }: SystemCardProps) {
           type="button"
           onClick={handleOpen}
           disabled={isOpening}
-          className="hub-stretch z-10 inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-1.5 py-1 text-[0.8125rem] font-semibold text-primary transition-colors group-hover:text-primary-hover disabled:opacity-60"
+          className="hub-stretch z-10 inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-1.5 py-1 text-[0.8125rem] font-semibold text-primary transition-colors group-hover:text-primary-hover disabled:opacity-70"
         >
-          {isOpening ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-          ) : (
-            <ArrowUpRight
-              className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
-              strokeWidth={2.25}
-              aria-hidden="true"
-            />
-          )}
+          <ArrowUpRight
+            className="hub-arrow h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
+            strokeWidth={2.25}
+            aria-hidden="true"
+          />
           {isOpening ? 'Abrindo' : 'Acessar'}
           <span className="sr-only"> {system.name} em nova aba</span>
         </button>

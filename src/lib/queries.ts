@@ -20,6 +20,7 @@ interface SystemRow {
   description: string | null
   url: string
   icon: string | null
+  logo_url: string | null
   category_id: string | null
   type: 'system' | 'indicator'
   display_order: number
@@ -35,7 +36,7 @@ function toSystem(row: SystemRow): SystemWithCategory {
 }
 
 const SYSTEM_SELECT =
-  'id, name, description, url, icon, category_id, type, display_order, active, created_at, updated_at, categories(name)'
+  'id, name, description, url, icon, logo_url, category_id, type, display_order, active, created_at, updated_at, categories(name)'
 
 /** Sistemas que o usuário pode ver (ativos). A permissão vem do banco. */
 export async function getVisibleSystems(): Promise<SystemWithCategory[]> {

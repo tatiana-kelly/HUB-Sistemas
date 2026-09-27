@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Rota People">
+  <!--
+    Família de marcas SAL HUB — grade 48, raio 13, símbolo em traço 2.75 branco.
+    Rota People: a rota que liga pessoas — dois nós conectados por um percurso,
+    o maior deles marcando a pessoa no fim do caminho.
+  -->
+  <defs>
+    <linearGradient id="people" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2E9C7C" />
+      <stop offset="1" stop-color="#125C48" />
+    </linearGradient>
+  </defs>
+
+  <rect width="48" height="48" rx="13" fill="url(#people)" />
+
+  <g fill="none" stroke="#ffffff" stroke-width="2.75" stroke-linecap="round">
+    <path d="M16 31.5 C16 24 32 24 32 16.5" opacity="0.55" />
+  </g>
+
+  <circle cx="16" cy="32" r="3" fill="#ffffff" opacity="0.75" />
+  <circle cx="32" cy="15.5" r="4.25" fill="#ffffff" />
+  <path
+    d="M25.5 32.5 C25.5 28.5 38.5 28.5 38.5 32.5"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="2.75"
+    stroke-linecap="round"
+    opacity="0.9"
+  />
+</svg>

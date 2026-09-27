@@ -156,9 +156,13 @@ export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrow
         </div>
       ) : (
         <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {visible.map((system) => (
+          {visible.map((system, index) => (
             <li key={system.id} className="flex">
-              <SystemCard system={system} isFavorite={favorites.has(system.id)} />
+              <SystemCard
+                system={system}
+                isFavorite={favorites.has(system.id)}
+                index={index}
+              />
             </li>
           ))}
         </ul>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Loader2, Star, X } from 'lucide-react'
-import { SystemIcon } from '@/components/SystemIcon'
+import { SystemBrand } from '@/components/SystemBrand'
 import { EmptyState, SectionHeading } from '@/components/ui'
 import { registerSystemAccess, toggleFavorite } from '@/app/actions/portal'
 import type { SystemWithCategory } from '@/lib/types'
@@ -47,8 +47,12 @@ export function FavoritesStrip({ systems }: { systems: SystemWithCategory[] }) {
       </SectionHeading>
 
       <ul className="hub-scroll-x mt-2.5 -mx-1 flex gap-2 px-1 pb-1.5">
-        {systems.map((system) => (
-          <li key={system.id} className="shrink-0 snap-start">
+        {systems.map((system, index) => (
+          <li
+            key={system.id}
+            style={{ '--index': index } as React.CSSProperties}
+            className="hub-rise shrink-0 snap-start"
+          >
             <FavoriteChip system={system} />
           </li>
         ))}
@@ -90,13 +94,19 @@ function FavoriteChip({ system }: { system: SystemWithCategory }) {
         disabled={isOpening}
         className="flex items-center gap-2 rounded-full py-1.5 pr-2 pl-1 text-[0.8125rem] font-medium text-fg disabled:opacity-60"
       >
-        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sunken text-muted transition-colors group-hover:bg-primary-soft group-hover:text-primary-soft-fg">
-          {isOpening ? (
+        {isOpening ? (
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sunken text-muted">
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-          ) : (
-            <SystemIcon icon={system.icon} className="h-3.5 w-3.5" />
-          )}
-        </span>
+          </span>
+        ) : (
+          <SystemBrand
+            name={system.name}
+            url={system.url}
+            logoUrl={system.logo_url}
+            size={24}
+            className="!rounded-full"
+          />
+        )}
         <span className="max-w-44 truncate">{system.name}</span>
         <span className="sr-only">— abrir em nova aba</span>
       </button>

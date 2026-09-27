@@ -35,6 +35,8 @@ export interface SystemRecord {
   description: string | null
   url: string
   icon: string | null
+  /** Marca exibida no card; vazio cai para o favicon do dominio e depois monograma. */
+  logo_url: string | null
   category_id: string | null
   type: SystemType
   display_order: number

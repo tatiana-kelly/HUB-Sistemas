@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Agente Rastreamento de Cargas">
+  <!--
+    Família de marcas SAL HUB — grade 48, raio 13, símbolo em traço 2.75 branco.
+    Rastreamento: varredura de radar com o ponto localizado fora do centro,
+    lendo como "a carga está aqui".
+  -->
+  <defs>
+    <linearGradient id="rastreamento" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2F7FC4" />
+      <stop offset="1" stop-color="#17416D" />
+    </linearGradient>
+  </defs>
+
+  <rect width="48" height="48" rx="13" fill="url(#rastreamento)" />
+
+  <g fill="none" stroke="#ffffff" stroke-width="2.75" stroke-linecap="round">
+    <circle cx="24" cy="24" r="12.5" opacity="0.28" />
+    <circle cx="24" cy="24" r="7.5" opacity="0.5" />
+    <!-- feixe de varredura -->
+    <path d="M24 24 L24 11.5" opacity="0.9" />
+  </g>
+
+  <circle cx="31.5" cy="30" r="3.25" fill="#ffffff" />
+</svg>

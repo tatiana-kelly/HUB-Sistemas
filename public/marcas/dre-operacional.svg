@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="DRE Operacional">
+  <!--
+    Família de marcas SAL HUB — grade 48, raio 13, símbolo em traço 2.75 branco.
+    DRE: três colunas de resultado com a linha de tendência cruzando por cima —
+    número que vira leitura, não só gráfico.
+  -->
+  <defs>
+    <linearGradient id="dre" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#C9862B" />
+      <stop offset="1" stop-color="#8A4E0B" />
+    </linearGradient>
+  </defs>
+
+  <rect width="48" height="48" rx="13" fill="url(#dre)" />
+
+  <g stroke="#ffffff" stroke-width="2.75" stroke-linecap="round" fill="none">
+    <path d="M15.5 32.5 L15.5 27" opacity="0.45" />
+    <path d="M24 32.5 L24 23" opacity="0.7" />
+    <path d="M32.5 32.5 L32.5 18.5" />
+    <path d="M14 21 L21 17 L27.5 20 L34.5 14" opacity="0.9" />
+  </g>
+
+  <circle cx="34.5" cy="14" r="2.75" fill="#ffffff" />
+</svg>

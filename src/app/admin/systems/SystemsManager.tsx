@@ -110,14 +110,30 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
             </Field>
           </div>
 
-          <Field label="Descrição" htmlFor="system-description">
-            <input
-              id="system-description"
-              name="description"
-              defaultValue={current?.description ?? ''}
-              className={inputClass}
-            />
-          </Field>
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            <Field label="Descrição" htmlFor="system-description">
+              <input
+                id="system-description"
+                name="description"
+                defaultValue={current?.description ?? ''}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="Marca (URL)"
+              htmlFor="system-logo"
+              hint="Opcional. Vazio usa o favicon do site e, se não houver, as iniciais."
+            >
+              <input
+                id="system-logo"
+                name="logo_url"
+                defaultValue={current?.logo_url ?? ''}
+                placeholder="/marcas/exemplo.svg"
+                className={inputClass}
+              />
+            </Field>
+          </div>
 
           <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
             <Field label="Categoria" htmlFor="system-category">

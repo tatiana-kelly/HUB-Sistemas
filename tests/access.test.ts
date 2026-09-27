@@ -18,6 +18,7 @@ function system(overrides: Partial<SystemWithCategory>): SystemWithCategory {
     description: overrides.description ?? null,
     url: overrides.url ?? 'https://exemplo.com',
     icon: overrides.icon ?? null,
+    logo_url: overrides.logo_url ?? null,
     category_id: overrides.category_id ?? null,
     type: overrides.type ?? 'system',
     display_order: overrides.display_order ?? 1,
