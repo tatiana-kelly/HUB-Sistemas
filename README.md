@@ -350,19 +350,30 @@ Variáveis já configuradas no projeto, para produção, preview e desenvolvimen
 `VERCEL_PROJECT_PRODUCTION_URL`, injetada automaticamente. Só vale defini-la ao
 migrar para domínio próprio.
 
-### Configuração do Supabase Auth (painel)
+### Configuração do Supabase Auth
 
-Três ajustes ficam no painel do Supabase — não há API pública para eles, e a CLI
-só sabe empurrar o `config.toml` inteiro, o que sobrescreveria a configuração de
-Auth do projeto:
+A configuração de Auth é versionada em `supabase/config.toml` e aplicada com:
 
-| Onde | O quê | Por quê |
-|---|---|---|
-| Authentication → URL Configuration | *Site URL*: `https://sal-hub-alpha.vercel.app`; *Redirect URLs*: `https://sal-hub-alpha.vercel.app/auth/callback` | Sem isso, convite e recuperação de senha mandam o link para `localhost` |
-| Authentication → Sign In / Providers → Email | desligar *Allow new users to sign up* | O portal não tem cadastro público: usuários entram por convite do administrador |
-| Authentication → Policies | ligar *Leaked password protection* | Apontado pelo linter do Supabase: checa a senha contra o HaveIBeenPwned |
+```bash
+supabase config push --project-ref SEU_PROJECT_REF
+```
 
-Ao migrar para domínio próprio, repetir o primeiro item com o novo domínio.
+**Leia antes de rodar.** O comando aplica o arquivo **inteiro, sem pedir
+confirmação**: todo campo não declarado ali volta ao padrão da CLI, mesmo que o
+projeto tenha outro valor. Por isso o arquivo repete explicitamente valores que
+o SAL HUB não quer mudar (MFA, confirmação de e-mail, `max_frequency`,
+`otp_length`). Ao editar, confira o diff que o comando imprime e rode de novo
+até sair `up_to_date` — o push é idempotente.
+
+Duas armadilhas já pagas, documentadas no próprio arquivo:
+
+- `[auth.email] enable_signup` liga/desliga o **provedor de e-mail inteiro** —
+  com `false`, ninguém faz login. Quem bloqueia cadastro público é
+  `enable_signup` na seção `[auth]`.
+- a proteção contra senha vazada não é reconhecida por esta versão da CLI: o
+  push a ignora em silêncio. Continua em **Authentication → Policies**, no painel.
+
+Ao migrar para domínio próprio, atualizar `site_url` e `additional_redirect_urls`.
 
 Para publicar uma cópia do zero:
 

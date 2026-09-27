@@ -1,0 +1,50 @@
+# Configuração de Auth do SAL HUB, versionada.
+#
+# ATENÇÃO: `supabase config push` aplica este arquivo INTEIRO e sem confirmação.
+# Tudo o que não estiver declarado aqui volta ao padrão da CLI, mesmo que o
+# projeto tenha outro valor. Por isso os campos abaixo repetem explicitamente os
+# valores do projeto, e não só o que o SAL HUB precisa mudar.
+project_id = "zkwfupxztxczeadrlsri"
+
+[auth]
+# Base dos links de convite e de recuperação de senha.
+site_url = "https://sal-hub-alpha.vercel.app"
+
+# Destinos aceitos no retorno do e-mail. Sem o domínio aqui, o link volta para
+# o site_url e o fluxo quebra.
+additional_redirect_urls = [
+  "https://sal-hub-alpha.vercel.app/auth/callback",
+  "http://localhost:3000/auth/callback",
+]
+
+# O portal não tem cadastro público: usuários entram por convite do
+# administrador. O convite usa a API de admin e continua funcionando.
+enable_signup = false
+
+# ─── valores do projeto, repetidos para não serem sobrescritos ──────────────
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_manual_linking = false
+enable_anonymous_sign_ins = false
+minimum_password_length = 6
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+# CUIDADO: aqui `enable_signup` liga/desliga o PROVEDOR de e-mail inteiro —
+# com false, ninguém consegue nem fazer login por e-mail e senha.
+# Quem bloqueia o cadastro público é `enable_signup` na seção [auth] acima.
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = false
+max_frequency = "1m0s"
+otp_length = 8
+otp_expiry = 3600
+
+# Não gerenciado aqui: a proteção contra senha vazada (HaveIBeenPwned) não é
+# reconhecida por esta versão da CLI — testei e o push a ignora em silêncio.
+# Fica em Authentication → Policies, no painel.
