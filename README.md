@@ -355,8 +355,11 @@ migrar para domínio próprio.
 A configuração de Auth é versionada em `supabase/config.toml` e aplicada com:
 
 ```bash
-supabase config push --project-ref SEU_PROJECT_REF
+npm run auth:push
 ```
+
+O comando confere o arquivo antes de aplicar — se a verificação reprovar, o push
+nem roda. Para só conferir, sem aplicar: `npm run auth:check`.
 
 **Leia antes de rodar.** O comando aplica o arquivo **inteiro, sem pedir
 confirmação**: todo campo não declarado ali volta ao padrão da CLI, mesmo que o
@@ -365,13 +368,17 @@ o SAL HUB não quer mudar (MFA, confirmação de e-mail, `max_frequency`,
 `otp_length`). Ao editar, confira o diff que o comando imprime e rode de novo
 até sair `up_to_date` — o push é idempotente.
 
-Duas armadilhas já pagas, documentadas no próprio arquivo:
+Duas armadilhas já pagas — as duas primeiras viraram teste em
+`scripts/check-auth-config.mjs`:
 
 - `[auth.email] enable_signup` liga/desliga o **provedor de e-mail inteiro** —
   com `false`, ninguém faz login. Quem bloqueia cadastro público é
   `enable_signup` na seção `[auth]`.
-- a proteção contra senha vazada não é reconhecida por esta versão da CLI: o
-  push a ignora em silêncio. Continua em **Authentication → Policies**, no painel.
+- campos omitidos voltam ao padrão da CLI. A verificação exige que MFA,
+  confirmação de e-mail, `max_frequency` e `otp_length` estejam declarados.
+- a proteção contra senha vazada **não** é reconhecida por esta versão da CLI: o
+  push a ignora em silêncio, sem aparecer no diff. Continua em
+  **Authentication → Policies**, no painel.
 
 Ao migrar para domínio próprio, atualizar `site_url` e `additional_redirect_urls`.
 
