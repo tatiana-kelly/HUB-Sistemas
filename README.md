@@ -350,6 +350,20 @@ Variáveis já configuradas no projeto, para produção, preview e desenvolvimen
 `VERCEL_PROJECT_PRODUCTION_URL`, injetada automaticamente. Só vale defini-la ao
 migrar para domínio próprio.
 
+### Configuração do Supabase Auth (painel)
+
+Três ajustes ficam no painel do Supabase — não há API pública para eles, e a CLI
+só sabe empurrar o `config.toml` inteiro, o que sobrescreveria a configuração de
+Auth do projeto:
+
+| Onde | O quê | Por quê |
+|---|---|---|
+| Authentication → URL Configuration | *Site URL*: `https://sal-hub-alpha.vercel.app`; *Redirect URLs*: `https://sal-hub-alpha.vercel.app/auth/callback` | Sem isso, convite e recuperação de senha mandam o link para `localhost` |
+| Authentication → Sign In / Providers → Email | desligar *Allow new users to sign up* | O portal não tem cadastro público: usuários entram por convite do administrador |
+| Authentication → Policies | ligar *Leaked password protection* | Apontado pelo linter do Supabase: checa a senha contra o HaveIBeenPwned |
+
+Ao migrar para domínio próprio, repetir o primeiro item com o novo domínio.
+
 Para publicar uma cópia do zero:
 
 1. importe o repositório na Vercel;

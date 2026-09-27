@@ -18,6 +18,10 @@ next-env.d.ts
 # vinculação local com a Vercel (contém ids do projeto e token OIDC)
 .vercel
 
+# estado local da CLI do Supabase
+/supabase/.temp
+/supabase/.branches
+
 # cobertura de testes
 /coverage
 
