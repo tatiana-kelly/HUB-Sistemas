@@ -15,6 +15,9 @@ next-env.d.ts
 .env.*
 !env.example
 
+# vinculação local com a Vercel (contém ids do projeto e token OIDC)
+.vercel
+
 # cobertura de testes
 /coverage
 
