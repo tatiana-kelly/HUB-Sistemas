@@ -341,15 +341,27 @@ Outras telas de administração:
 
 ## Deploy
 
-O projeto é um app Next.js padrão e roda na Vercel sem configuração especial:
+**Ambiente de produção:** https://sal-hub-alpha.vercel.app
+(projeto `sal-hub` na Vercel, região `iad1`, Next.js detectado automaticamente)
+
+Variáveis já configuradas no projeto, para produção, preview e desenvolvimento:
+`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+`NEXT_PUBLIC_SITE_URL` é dispensável na Vercel — `siteUrl()` cai para
+`VERCEL_PROJECT_PRODUCTION_URL`, injetada automaticamente. Só vale defini-la ao
+migrar para domínio próprio.
+
+Para publicar uma cópia do zero:
 
 1. importe o repositório na Vercel;
-2. cadastre as quatro variáveis de ambiente (a service role key apenas como
-   variável de servidor, nunca `NEXT_PUBLIC_`);
-3. aponte `NEXT_PUBLIC_SITE_URL` para o domínio final;
-4. no Supabase, em **Authentication → URL Configuration**, inclua esse domínio e
+2. cadastre as variáveis de ambiente (a service role key apenas como variável de
+   servidor, nunca `NEXT_PUBLIC_`);
+3. no Supabase, em **Authentication → URL Configuration**, inclua o domínio e
    `https://SEU-DOMINIO/auth/callback` nas *Redirect URLs*, senão os links de
-   convite e de recuperação de senha não voltam para o portal.
+   convite e de recuperação de senha não voltam para o portal;
+4. confira a **Deployment Protection** do projeto: com a *Vercel Authentication*
+   ligada, só quem tem conta no time da Vercel abre o portal — o que barra os
+   usuários do HUB. O controle de acesso do produto é o login do próprio portal,
+   com RLS no banco.
 
 ---
 
