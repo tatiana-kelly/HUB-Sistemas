@@ -1,52 +1,80 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { brandHue, brandInitials, brandSources } from '@/lib/brand'
 
 interface SystemBrandProps {
   name: string
   url: string
   logoUrl: string | null
-  /** Aresta do quadro da marca, em px. */
+  /** Aresta do quadro da marca, em px. Todas as marcas ocupam a mesma caixa. */
   size?: number
   className?: string
 }
 
-/** Abaixo disto a imagem é um favicon de barra de endereço, não uma marca. */
-const RESOLUCAO_MINIMA = 64
+/**
+ * Ampliação máxima de uma arte pequena. Um favicon de 32px chega a 88px com
+ * 2.75×, mantendo a marca no mesmo tamanho das outras sem virar mosaico. Acima
+ * disso a arte é exibida menor, centralizada na mesma caixa.
+ */
+const AMPLIACAO_MAXIMA = 3
 
 /**
  * Marca do sistema, em camadas: o monograma é desenhado sempre, e a imagem
- * entra por cima quando (e se) carregar.
+ * entra por cima quando (e se) carregar. Isso evita o ícone de imagem quebrada
+ * do navegador durante a cascata e o buraco no card quando tudo falha.
  *
- * Fazer assim evita os dois defeitos da versão em cascata simples: o ícone de
- * imagem quebrada do navegador enquanto as fontes são tentadas, e o buraco no
- * card quando todas falham. A troca de fonte acontece no onError, do maior
- * ícone para o menor.
- *
- * Um favicon de 32px esticado para 88px borra e entrega amadorismo. Quando a
- * imagem que chega é pequena demais, ela aparece perto do tamanho nativo,
- * centralizada, em vez de ampliada.
+ * A prontidão da imagem é verificada com `decode()` em vez de `onLoad`: uma
+ * imagem vinda do cache costuma ficar pronta antes de o React anexar o handler,
+ * e aí o evento nunca dispara — a marca ficava invisível.
  */
 export function SystemBrand({ name, url, logoUrl, size = 36, className = '' }: SystemBrandProps) {
   const fontes = brandSources(logoUrl, url)
   const [tentativa, setTentativa] = useState(0)
   const [carregada, setCarregada] = useState(false)
-  const [baixaResolucao, setBaixaResolucao] = useState(false)
+  /** Teto de exibição quando a arte é pequena demais para preencher a caixa. */
+  const [tetoPx, setTetoPx] = useState<number | null>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
 
   const fonte = fontes[tentativa]
   const hue = brandHue(name)
 
-  /**
-   * Imagem vinda do cache já chega completa antes de o React anexar o onLoad —
-   * e o handler nunca dispara, deixando a marca invisível. Por isso a avaliação
-   * roda também no ref, que corre na fase de commit.
-   */
-  const avaliar = useCallback((img: HTMLImageElement | null) => {
-    if (!img || !img.complete || img.naturalWidth === 0) return
-    setBaixaResolucao(img.naturalWidth < RESOLUCAO_MINIMA)
-    setCarregada(true)
-  }, [])
+  useEffect(() => {
+    const img = imgRef.current
+    if (!img || !fonte) return
+
+    let cancelado = false
+
+    function aplicar() {
+      if (cancelado || !img) return
+      const maiorLado = Math.max(img.naturalWidth, img.naturalHeight)
+      const limite = maiorLado * AMPLIACAO_MAXIMA
+      setTetoPx(limite < size ? Math.round(limite) : null)
+      setCarregada(true)
+    }
+
+    /** Passa para a próxima fonte da cascata; sem mais fontes, sobra o monograma. */
+    function falhar() {
+      if (cancelado) return
+      setCarregada(false)
+      setTetoPx(null)
+      setTentativa((valor) => valor + 1)
+    }
+
+    // `complete` com naturalWidth 0 é falha, não "ainda carregando" — e é o
+    // estado em que uma imagem quebrada costuma chegar aqui, antes de o React
+    // anexar o onError. Sem tratar isso, a cascata trava na primeira fonte.
+    if (img.complete) {
+      if (img.naturalWidth === 0) falhar()
+      else aplicar()
+    } else {
+      img.decode().then(aplicar, falhar)
+    }
+
+    return () => {
+      cancelado = true
+    }
+  }, [fonte, size])
 
   return (
     <span
@@ -68,26 +96,20 @@ export function SystemBrand({ name, url, logoUrl, size = 36, className = '' }: S
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
           key={fonte}
+          ref={imgRef}
           src={fonte}
           alt=""
-          loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
-          ref={avaliar}
-          onLoad={(evento) => avaliar(evento.currentTarget)}
           onError={() => {
             setCarregada(false)
-            setBaixaResolucao(false)
+            setTetoPx(null)
             setTentativa((valor) => valor + 1)
           }}
-          style={
-            baixaResolucao
-              ? { maxWidth: Math.min(size, 44), maxHeight: Math.min(size, 44) }
-              : undefined
-          }
+          style={tetoPx ? { maxWidth: tetoPx, maxHeight: tetoPx } : undefined}
           className={`hub-brand-img absolute inset-0 m-auto object-contain transition-opacity duration-200 ${
             carregada ? 'opacity-100' : 'opacity-0'
-          } ${baixaResolucao ? '' : 'h-full w-full'}`}
+          } ${tetoPx ? '' : 'h-full w-full'}`}
         />
       )}
     </span>

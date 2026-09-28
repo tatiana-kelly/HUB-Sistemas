@@ -8,8 +8,8 @@ interface LogoProps {
   subtitleClassName?: string
 }
 
-/** Proporção do arquivo oficial (1187 × 651). */
-const PROPORCAO = 1187 / 651
+/** Proporção do arquivo oficial, já sem o fundo branco (520 × 285). */
+const PROPORCAO = 520 / 285
 
 /**
  * Marca do portal: logo oficial da SAL Express + o nome do produto.
@@ -24,7 +24,7 @@ export function Logo({ size = 'sm', withSubtitle = false, subtitleClassName = ''
   return (
     <span className={`flex items-center ${isLarge ? 'gap-3.5' : 'gap-2.5'}`}>
       <Image
-        src="/marcas/sal-express.webp"
+        src="/marcas/sal-express.png"
         alt="SAL Express"
         width={Math.round(altura * PROPORCAO)}
         height={altura}

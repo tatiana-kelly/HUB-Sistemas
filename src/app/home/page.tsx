@@ -77,7 +77,7 @@ export default async function HomePage({
           </p>
           <p className="flex items-center gap-3 text-[0.6875rem] tracking-[0.14em] text-subtle uppercase">
             <Image
-              src="/marcas/sal-express.webp"
+              src="/marcas/sal-express.png"
               alt="SAL Express"
               width={58}
               height={32}
