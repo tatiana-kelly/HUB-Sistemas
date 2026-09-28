@@ -63,16 +63,16 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --app-bg: #0b1017;
+  --app-bg: #0a1424;
   --app-bg-accent: 92 152 214;
-  --surface: #141b25;
-  --surface-sunken: #0f151d;
-  --surface-hover: #1a2431;
+  --surface: #12203a;
+  --surface-sunken: #0d1a2e;
+  --surface-hover: #182a48;
   --surface-inverse: #eef2f7;
 
-  --border: #232d3b;
-  --border-strong: #32405288;
-  --border-accent: #35618f;
+  --border: #21395c;
+  --border-strong: #2f4f7d;
+  --border-accent: #3d74b8;
 
   --text: #e8edf4;
   --text-muted: #9aa6b7;
@@ -81,7 +81,7 @@
 
   --primary: #4d8fd0;
   --primary-hover: #64a1dd;
-  --primary-soft: #16283c;
+  --primary-soft: #16304f;
   --primary-soft-text: #8ebdea;
   --primary-ring: #4d8fd0;
 
@@ -94,7 +94,7 @@
   --danger: #f0837a;
   --danger-soft: #331a18;
 
-  --skeleton: #1c2634;
+  --skeleton: #16294a;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 20px -12px rgb(0 0 0 / 0.6);
@@ -191,20 +191,19 @@ input[type='search']::-webkit-search-cancel-button {
   isolation: isolate;
 }
 
+/* Formas suaves de fundo: dão profundidade à tela cheia sem virar textura nem
+   competir com os cards. Cobrem a viewport inteira e não rolam com o conteúdo. */
 .hub-ambient::before {
   content: '';
   position: fixed;
-  inset: 0 0 auto;
-  height: 22rem;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(
-      44rem 18rem at 18% -6rem,
-      rgb(var(--app-bg-accent) / 0.13),
-      transparent 70%
-    ),
-    radial-gradient(34rem 14rem at 88% -8rem, rgb(var(--app-bg-accent) / 0.08), transparent 68%);
+    radial-gradient(52rem 26rem at 14% -8rem, rgb(var(--app-bg-accent) / 0.16), transparent 68%),
+    radial-gradient(40rem 20rem at 92% -4rem, rgb(var(--app-bg-accent) / 0.1), transparent 64%),
+    radial-gradient(46rem 30rem at 78% 108%, rgb(var(--app-bg-accent) / 0.09), transparent 66%),
+    radial-gradient(34rem 24rem at 8% 92%, rgb(var(--app-bg-accent) / 0.07), transparent 62%);
 }
 
 /* ─── utilitários compartilhados ──────────────────────────────────────────── */
@@ -251,9 +250,19 @@ input[type='search']::-webkit-search-cancel-button {
 
 /* ─── card de sistema ─────────────────────────────────────────────────────── */
 
-/* Proporção estável para a grade: a marca manda, o nome acompanha. */
+/* Proporção estável para a grade: a marca manda, o nome acompanha.
+   Largura fixa para a última linha poder centralizar sem esticar card. */
 .hub-tile {
   min-height: 15rem;
+}
+
+/* Brilho azul discreto no hover — sinaliza o alvo sem virar neon. */
+.hub-tile:hover,
+.hub-tile:focus-within {
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 1px var(--border-accent),
+    0 0 28px -6px rgb(var(--app-bg-accent) / 0.4);
 }
 
 /* A marca de um card grande dispensa a moldura dos atalhos: ela já é o

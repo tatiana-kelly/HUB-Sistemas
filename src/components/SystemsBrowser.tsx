@@ -26,7 +26,16 @@ export function SystemsBrowser({ systems, favoriteIds, categories, heading }: Sy
   const inputRef = useRef<HTMLInputElement>(null)
 
   const favorites = useMemo(() => new Set(favoriteIds), [favoriteIds])
-  const visible = useMemo(() => filterSystems(systems, term, category), [systems, term, category])
+
+  // Sem bloco separado de favoritos, a estrela ganha função aqui: o que a pessoa
+  // marcou vem primeiro, preservando a ordem de exibição dentro de cada grupo.
+  const visible = useMemo(() => {
+    const encontrados = filterSystems(systems, term, category)
+    return [
+      ...encontrados.filter((system) => favorites.has(system.id)),
+      ...encontrados.filter((system) => !favorites.has(system.id)),
+    ]
+  }, [systems, term, category, favorites])
 
   // Ctrl/⌘ + K foca a busca. Ignorado quando o foco já está num campo, para não
   // atrapalhar quem digita em um formulário.
@@ -148,14 +157,15 @@ export function SystemsBrowser({ systems, favoriteIds, categories, heading }: Sy
           </EmptyState>
         </div>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        // Flex em vez de grid: com 5 sistemas a última linha fica centralizada,
+        // em vez de encostar à esquerda deixando um vão.
+        <ul className="mt-6 flex flex-wrap justify-center gap-4">
           {visible.map((system, index) => (
-            <li key={system.id} className="flex">
-              <SystemCard
-                system={system}
-                isFavorite={favorites.has(system.id)}
-                index={index}
-              />
+            <li
+              key={system.id}
+              className="flex w-full max-w-[26rem] sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] 2xl:w-[calc(25%-0.75rem)]"
+            >
+              <SystemCard system={system} isFavorite={favorites.has(system.id)} index={index} />
             </li>
           ))}
         </ul>

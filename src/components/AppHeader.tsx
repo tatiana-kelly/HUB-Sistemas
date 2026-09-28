@@ -7,15 +7,21 @@ import { buttonClass } from '@/components/ui'
 import type { HubSession } from '@/lib/types'
 
 /**
- * Cabeçalho do portal. Em telas estreitas o botão de administração recolhe para
- * dentro do menu do usuário, deixando só identidade, tema e conta na barra.
+ * Cabeçalho do portal.
+ *
+ * O perfil aparece como texto, nunca como seletor: quem define o que a pessoa
+ * enxerga é o role gravado no profile, e trocá-lo é ação de administrador. Aqui
+ * é só a leitura do que a sessão já traz.
+ *
+ * Em telas estreitas o botão de administração recolhe para dentro do menu do
+ * usuário, deixando só identidade, tema e conta na barra.
  */
 export function AppHeader({ session }: { session: HubSession }) {
   const displayName = session.profile.name ?? session.email?.split('@')[0] ?? 'Usuário'
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 w-full max-w-[1500px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link
           href="/home"
           aria-label="SAL HUB — ir para a página inicial"
@@ -26,6 +32,13 @@ export function AppHeader({ session }: { session: HubSession }) {
         </Link>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {session.profile.role_name && (
+            <p className="mr-1 hidden text-[0.8125rem] text-muted md:block">
+              Perfil:{' '}
+              <span className="font-semibold text-fg">{session.profile.role_name}</span>
+            </p>
+          )}
+
           {/* Wrapper em vez de `hidden` no próprio link: buttonClass já define
               display, e as duas utilidades competiriam pela mesma propriedade. */}
           {session.isAdmin && (
