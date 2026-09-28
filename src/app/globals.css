@@ -240,14 +240,6 @@ input[type='search']::-webkit-search-cancel-button {
   }
 }
 
-/* Expande o clique para o card inteiro sem aninhar elementos interativos. */
-.hub-stretch::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-
 /* ─── card de sistema ─────────────────────────────────────────────────────── */
 
 /* Proporção estável para a grade: a marca manda, o nome acompanha.

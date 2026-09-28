@@ -20,8 +20,8 @@ interface SystemCardProps {
  * já identifica o sistema no dia a dia. Ela continua no DOM para leitor de tela
  * e continua alimentando a busca.
  *
- * O botão de abrir cobre o card com `hub-stretch`; a estrela fica acima dele,
- * então não há interativo aninhado e o teclado alcança os dois separadamente.
+ * O botão de abrir ocupa toda a área do card; a estrela fica acima dele, então
+ * não há interativo aninhado e o teclado alcança os dois separadamente.
  */
 export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
   const [favorite, setFavorite] = useState(isFavorite)
@@ -116,22 +116,26 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
         />
       </button>
 
-      {/* Ação principal: cobre o card inteiro, com a seta ancorada no canto. */}
+      {/* Ação principal: o botão É o card. Ele cobre toda a área e alinha a seta
+          no canto, em vez de ser um alvo pequeno no canto. A estrela fica acima
+          dele (z maior) para continuar clicável de forma independente. */}
       <button
         type="button"
         onClick={handleOpen}
         disabled={isOpening}
-        className="hub-stretch absolute right-3 bottom-3 z-10 grid h-9 w-9 place-items-center rounded-[var(--radius-md)] text-subtle transition-colors group-hover:text-primary disabled:opacity-70"
+        className="absolute inset-0 z-10 flex items-end justify-end rounded-[inherit] p-3 text-subtle transition-colors group-hover:text-primary disabled:opacity-70"
       >
-        {isOpening ? (
-          <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
-        ) : (
-          <ArrowUpRight
-            className="hub-arrow h-4.5 w-4.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
-            strokeWidth={2}
-            aria-hidden="true"
-          />
-        )}
+        <span className="grid h-9 w-9 place-items-center">
+          {isOpening ? (
+            <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
+          ) : (
+            <ArrowUpRight
+              className="hub-arrow h-4.5 w-4.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          )}
+        </span>
         <span className="sr-only">Acessar {system.name} em nova aba</span>
       </button>
 
