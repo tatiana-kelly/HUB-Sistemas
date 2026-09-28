@@ -73,9 +73,11 @@ export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrow
       </SectionHeading>
 
       <div className="mt-2.5 flex flex-col gap-2.5 lg:flex-row lg:items-center">
-        <div className="relative lg:w-80 lg:shrink-0">
+        {/* Com dezenas de sistemas, buscar é o caminho real — por isso o campo
+            tem presença de ferramenta, não de filtro auxiliar. */}
+        <div className="relative lg:w-96 lg:shrink-0">
           <Search
-            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-subtle"
+            className="pointer-events-none absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-muted"
             aria-hidden="true"
           />
           <label htmlFor="busca-sistemas" className="sr-only">
@@ -89,7 +91,7 @@ export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrow
             onChange={(event) => setTerm(event.target.value)}
             placeholder="Buscar sistema ou indicador..."
             autoComplete="off"
-            className="h-9.5 w-full rounded-[var(--radius-md)] border border-line bg-surface pr-16 pl-9 text-sm text-fg transition-colors placeholder:text-subtle hover:border-line-strong focus:border-line-accent focus:outline-none"
+            className="h-11 w-full rounded-[var(--radius-md)] border border-line bg-surface pr-16 pl-10.5 text-[0.9375rem] text-fg shadow-e1 transition-colors placeholder:text-subtle hover:border-line-strong focus:border-line-accent focus:outline-none"
           />
 
           {term ? (
@@ -100,7 +102,7 @@ export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrow
                 inputRef.current?.focus()
               }}
               aria-label="Limpar busca"
-              className="absolute top-1/2 right-2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-[var(--radius-xs)] text-subtle transition-colors hover:bg-hover hover:text-fg"
+              className="absolute top-1/2 right-2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-[var(--radius-xs)] text-subtle transition-colors hover:bg-hover hover:text-fg"
             >
               <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
             </button>
@@ -127,7 +129,7 @@ export function SystemsBrowser({ systems, favoriteIds, categories }: SystemsBrow
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => setCategory(filter.value)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8125rem] font-medium transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[0.8125rem] font-medium transition-colors ${
                   isActive
                     ? 'bg-inverse text-on-inverse'
                     : 'text-muted hover:bg-hover hover:text-fg'

@@ -79,7 +79,7 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
       <div className="flex items-start gap-3">
         <SystemBrand name={system.name} url={system.url} logoUrl={system.logo_url} />
 
-        <div className="min-w-0 flex-1 pr-7">
+        <div className="min-w-0 flex-1 pr-8">
           <h3 className="truncate text-[0.9375rem] leading-tight font-semibold text-fg">
             {system.name}
           </h3>
@@ -97,10 +97,8 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
         aria-label={
           favorite ? `Remover ${system.name} dos favoritos` : `Adicionar ${system.name} aos favoritos`
         }
-        className={`absolute top-2.5 right-2.5 z-20 grid h-7 w-7 place-items-center rounded-[var(--radius-sm)] transition-colors ${
-          favorite
-            ? 'text-accent'
-            : 'text-subtle opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-accent'
+        className={`hub-fav absolute top-1.5 right-1.5 z-20 grid h-10 w-10 place-items-center rounded-[var(--radius-sm)] transition-[color,opacity] ${
+          favorite ? 'text-accent' : 'text-subtle hover:text-accent'
         }`}
       >
         <Star

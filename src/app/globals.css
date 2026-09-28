@@ -308,6 +308,24 @@ input[type='search']::-webkit-search-cancel-button {
   animation-delay: calc(min(var(--index, 0), 14) * 28ms);
 }
 
+/* A estrela só se esconde onde existe ponteiro: em tela de toque não há hover,
+   e esconder deixaria o favorito inalcançável pelo celular. */
+.hub-fav {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hub-fav {
+    opacity: 0;
+  }
+
+  .group:hover .hub-fav,
+  .hub-fav:focus-visible,
+  .hub-fav[aria-pressed='true'] {
+    opacity: 1;
+  }
+}
+
 /* Favoritar: a estrela cede e assenta, como um botão que foi pressionado.
    Sem overshoot — a confirmação vem da desaceleração, não de um salto. */
 @keyframes hub-pop {

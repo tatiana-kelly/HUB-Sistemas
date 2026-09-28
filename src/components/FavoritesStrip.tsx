@@ -115,7 +115,7 @@ function FavoriteChip({ system }: { system: SystemWithCategory }) {
         type="button"
         onClick={remove}
         aria-label={`Remover ${system.name} dos favoritos`}
-        className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-subtle transition-colors hover:bg-hover hover:text-danger"
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-subtle transition-colors hover:bg-hover hover:text-danger"
       >
         <X className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
       </button>
