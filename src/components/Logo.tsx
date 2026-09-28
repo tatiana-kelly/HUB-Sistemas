@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 interface LogoProps {
   /** 'lg' nas telas de autenticação, 'sm' no cabeçalho. */
   size?: 'sm' | 'lg'
@@ -6,26 +8,39 @@ interface LogoProps {
   subtitleClassName?: string
 }
 
+/** Proporção do arquivo oficial (1187 × 651). */
+const PROPORCAO = 1187 / 651
+
+/**
+ * Marca do portal: logo oficial da SAL Express + o nome do produto.
+ *
+ * A logo já diz "SAL", então o texto ao lado é só "HUB" — escrever "SAL HUB"
+ * aqui repetiria a palavra duas vezes lado a lado.
+ */
 export function Logo({ size = 'sm', withSubtitle = false, subtitleClassName = '' }: LogoProps) {
   const isLarge = size === 'lg'
+  const altura = isLarge ? 44 : 30
 
   return (
-    <span className="flex items-center gap-2.5">
-      <span
-        aria-hidden="true"
-        className={`grid shrink-0 place-items-center rounded-[var(--radius-md)] bg-primary font-bold tracking-tight text-white dark:text-on-inverse ${
-          isLarge ? 'h-11 w-11 text-base' : 'h-8 w-8 text-[0.6875rem]'
-        }`}
-      >
-        SAL
-      </span>
+    <span className={`flex items-center ${isLarge ? 'gap-3.5' : 'gap-2.5'}`}>
+      <Image
+        src="/marcas/sal-express.webp"
+        alt="SAL Express"
+        width={Math.round(altura * PROPORCAO)}
+        height={altura}
+        priority
+        className="shrink-0"
+      />
+
+      <span aria-hidden="true" className={`w-px self-stretch bg-line ${isLarge ? 'my-1' : ''}`} />
+
       <span className="min-w-0">
         <span
           className={`block leading-none font-semibold tracking-tight whitespace-nowrap text-fg ${
             isLarge ? 'text-xl' : 'text-[0.9375rem]'
           }`}
         >
-          SAL HUB
+          HUB
         </span>
         {withSubtitle && (
           <span

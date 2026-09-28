@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { AppHeader } from '@/components/AppHeader'
 import { Alert } from '@/components/Alert'
 import { SystemsBrowser } from '@/components/SystemsBrowser'
@@ -75,7 +76,13 @@ export default async function HomePage({
             movem o amanhã.
           </p>
           <p className="flex items-center gap-3 text-[0.6875rem] tracking-[0.14em] text-subtle uppercase">
-            <span className="text-sm font-bold tracking-tight text-muted normal-case">SAL</span>
+            <Image
+              src="/marcas/sal-express.webp"
+              alt="SAL Express"
+              width={58}
+              height={32}
+              className="shrink-0 opacity-80"
+            />
             <span aria-hidden="true" className="h-4 w-px bg-line-strong" />
             <span>
               Juntos
