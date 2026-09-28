@@ -382,6 +382,36 @@ Duas armadilhas já pagas — as duas primeiras viraram teste em
 
 Ao migrar para domínio próprio, atualizar `site_url` e `additional_redirect_urls`.
 
+### E-mails de autenticação pelo Email Agent
+
+Por padrão o Supabase envia convite e recuperação de senha pelo **SMTP de
+cortesia**, que entrega poucos e-mails por hora. Convidando uma equipe inteira,
+a maior parte dos convites não sai — e o sintoma parece ser do portal.
+
+A Edge Function `supabase/functions/auth-email` resolve isso: ela intercepta o
+envio (Send Email Hook) e delega ao Email Agent oficial da SAL
+(`ia.sal@salexpress.com.br`), com o e-mail já no visual do portal. Já está
+publicada e respondendo — **falta apenas ligar**, nesta ordem:
+
+1. **Edge Functions → Secrets** do projeto, criar `EMAIL_AGENT_TRIGGER_SECRET`
+   com o mesmo valor usado no projeto `relatorios-raw`.
+2. **Authentication → Hooks → Send Email**: apontar para
+   `https://<project-ref>.supabase.co/functions/v1/auth-email`. O painel gera o
+   `SEND_EMAIL_HOOK_SECRET` — copie para os Secrets da função.
+3. Em `supabase/config.toml`, trocar `[auth.hook.send_email] enabled` para
+   `true` e rodar `npm run auth:push`.
+4. Testar com um convite real e conferir a caixa de entrada **e o spam** — e-mail
+   com botão e link para domínio novo costuma cair no spam da primeira vez.
+
+> **A ordem importa.** Com o hook ligado e um dos segredos faltando, nenhum
+> e-mail de autenticação sai: nem convite, nem recuperação de senha. A função
+> devolve erro em vez de fingir sucesso, justamente para o problema aparecer no
+> log do Auth em vez de silenciosamente sumir.
+
+O corpo do e-mail carrega um link com token de uso único. O Email Agent registra
+apenas destinatário, assunto e status — nunca o corpo —, então o link não vai
+parar em log.
+
 Para publicar uma cópia do zero:
 
 1. importe o repositório na Vercel;

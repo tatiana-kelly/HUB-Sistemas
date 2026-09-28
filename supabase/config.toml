@@ -48,3 +48,16 @@ otp_expiry = 3600
 # Não gerenciado aqui: a proteção contra senha vazada (HaveIBeenPwned) não é
 # reconhecida por esta versão da CLI — testei e o push a ignora em silêncio.
 # Fica em Authentication → Policies, no painel.
+
+# ─── envio dos e-mails de autenticação ───────────────────────────────────────
+# Desligado: o Auth ainda usa o SMTP de cortesia do Supabase, que entrega poucos
+# e-mails por hora. A Edge Function `auth-email` já está publicada e delega ao
+# Email Agent oficial (ia.sal@salexpress.com.br).
+#
+# NÃO ligue antes de os dois segredos existirem em Edge Functions → Secrets do
+# projeto: EMAIL_AGENT_TRIGGER_SECRET e SEND_EMAIL_HOOK_SECRET. Com o hook
+# ligado e um segredo faltando, NENHUM e-mail de autenticação sai — nem convite,
+# nem recuperação de senha.
+[auth.hook.send_email]
+enabled = false
+uri = "https://zkwfupxztxczeadrlsri.supabase.co/functions/v1/auth-email"
