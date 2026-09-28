@@ -7,11 +7,12 @@ describe('brandSources', () => {
     expect(fontes[0]).toBe('/marcas/rota-people.svg')
   })
 
-  it('tenta ico, png e apple-touch-icon quando não há logo', () => {
+  it('tenta da maior resolução para a menor quando não há logo', () => {
+    // O card mostra a 88px: o ico de 32px é o último recurso, não o primeiro.
     expect(brandSources(null, 'https://app.powerbi.com/home')).toEqual([
-      'https://app.powerbi.com/favicon.ico',
-      'https://app.powerbi.com/favicon.png',
       'https://app.powerbi.com/apple-touch-icon.png',
+      'https://app.powerbi.com/favicon.png',
+      'https://app.powerbi.com/favicon.ico',
     ])
   })
 
@@ -19,8 +20,10 @@ describe('brandSources', () => {
     expect(brandSources(null, 'javascript:alert(1)')).toEqual([])
   })
 
-  it('ignora logo em branco', () => {
-    expect(brandSources('   ', 'https://exemplo.com/')[0]).toBe('https://exemplo.com/favicon.ico')
+  it('ignora logo em branco e cai direto para as fontes do domínio', () => {
+    expect(brandSources('   ', 'https://exemplo.com/')[0]).toBe(
+      'https://exemplo.com/apple-touch-icon.png',
+    )
   })
 })
 

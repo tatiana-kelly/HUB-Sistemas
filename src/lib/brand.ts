@@ -21,9 +21,12 @@ export function faviconUrl(systemUrl: string): string | null {
 }
 
 /**
- * Ordem de tentativas da marca. Sites em SPA costumam responder o index.html em
- * /favicon.ico — a imagem falha ao decodificar e a próxima fonte entra, até
- * sobrar o monograma.
+ * Ordem de tentativas da marca, da maior resolução para a menor.
+ *
+ * O card mostra a marca a 88px, e `favicon.ico` costuma ter 32px — ampliado,
+ * borra. Por isso o apple-touch-icon (180px de praxe) vem antes. Sites em SPA
+ * ainda respondem o index.html em qualquer um desses caminhos: a imagem falha
+ * ao decodificar, a próxima fonte entra, e no fim sobra o monograma.
  */
 export function brandSources(logoUrl: string | null, systemUrl: string): string[] {
   const fontes: string[] = []
@@ -31,9 +34,9 @@ export function brandSources(logoUrl: string | null, systemUrl: string): string[
 
   const favicon = faviconUrl(systemUrl)
   if (favicon) {
-    fontes.push(favicon)
-    fontes.push(favicon.replace(/\.ico$/, '.png'))
     fontes.push(favicon.replace(/favicon\.ico$/, 'apple-touch-icon.png'))
+    fontes.push(favicon.replace(/\.ico$/, '.png'))
+    fontes.push(favicon)
   }
 
   return fontes

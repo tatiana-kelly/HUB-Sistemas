@@ -249,6 +249,22 @@ input[type='search']::-webkit-search-cancel-button {
   border-radius: inherit;
 }
 
+/* ─── card de sistema ─────────────────────────────────────────────────────── */
+
+/* Proporção estável para a grade: a marca manda, o nome acompanha. */
+.hub-tile {
+  min-height: 15rem;
+}
+
+/* A marca de um card grande dispensa a moldura dos atalhos: ela já é o
+   elemento principal. Especificidade dobrada para vencer .hub-brand-frame. */
+.hub-brand.hub-tile-brand {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: var(--radius-lg);
+}
+
 /* ─── marcas dos sistemas ─────────────────────────────────────────────────── */
 
 /* Moldura comum: mantém logos de origens diferentes com o mesmo peso visual. */

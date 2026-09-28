@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { ArrowUpRight, Star } from 'lucide-react'
+import { ArrowUpRight, Loader2, Star } from 'lucide-react'
 import { SystemBrand } from '@/components/SystemBrand'
 import { registerSystemAccess, toggleFavorite } from '@/app/actions/portal'
 import type { SystemWithCategory } from '@/lib/types'
@@ -14,12 +14,14 @@ interface SystemCardProps {
 }
 
 /**
- * Card de sistema. O card inteiro é a ação principal — o botão cobre a área com
- * `hub-stretch`, e a estrela fica acima dele, então não há elemento interativo
- * aninhado e a navegação por teclado alcança os dois separadamente.
+ * Card de sistema: marca grande no centro, nome embaixo, card inteiro clicável.
  *
- * O clique não navega pela URL direto: chama o servidor, que revalida a
- * permissão, grava o access_log e devolve a URL para abrir em nova aba.
+ * A descrição não aparece — o reconhecimento vem da marca, que é como a pessoa
+ * já identifica o sistema no dia a dia. Ela continua no DOM para leitor de tela
+ * e continua alimentando a busca.
+ *
+ * O botão de abrir cobre o card com `hub-stretch`; a estrela fica acima dele,
+ * então não há interativo aninhado e o teclado alcança os dois separadamente.
  */
 export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
   const [favorite, setFavorite] = useState(isFavorite)
@@ -27,7 +29,7 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
   const [isOpening, startOpening] = useTransition()
   const [, startFavoriting] = useTransition()
 
-  // Só anima a estrela depois da primeira interação: sem isso, todos os
+  // Só anima a estrela depois de uma interação real: sem isso, todos os
   // favoritos "pipocariam" ao carregar a página.
   const interagiu = useRef(false)
   const [pulso, setPulso] = useState(false)
@@ -38,8 +40,6 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
     const id = window.setTimeout(() => setPulso(false), 280)
     return () => window.clearTimeout(id)
   }, [pulso])
-
-  const isIndicator = system.type === 'indicator'
 
   function handleOpen() {
     setError(null)
@@ -72,70 +72,71 @@ export function SystemCard({ system, isFavorite, index = 0 }: SystemCardProps) {
   return (
     <article
       style={{ '--index': index } as React.CSSProperties}
-      className={`hub-rise group relative flex h-full w-full flex-col rounded-[var(--radius-lg)] border border-line bg-surface p-3.5 transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-accent hover:shadow-e3 focus-within:border-line-accent focus-within:shadow-e3 ${
+      className={`hub-rise hub-tile group relative flex h-full w-full flex-col items-center justify-center rounded-[var(--radius-xl)] border border-line bg-surface px-5 pt-10 pb-11 text-center transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-accent hover:shadow-e3 focus-within:border-line-accent focus-within:shadow-e3 ${
         isOpening ? 'hub-progress' : ''
       }`}
     >
-      <div className="flex items-start gap-3">
-        <SystemBrand name={system.name} url={system.url} logoUrl={system.logo_url} />
+      <SystemBrand
+        name={system.name}
+        url={system.url}
+        logoUrl={system.logo_url}
+        size={88}
+        className="hub-tile-brand"
+      />
 
-        <div className="min-w-0 flex-1 pr-8">
-          <h3 className="truncate text-[0.9375rem] leading-tight font-semibold text-fg">
-            {system.name}
-          </h3>
-          <p className="mt-1 line-clamp-2 text-[0.8125rem] leading-snug text-muted">
-            {system.description ?? 'Acesso corporativo'}
-          </p>
-        </div>
-      </div>
+      <h3 className="mt-5 text-[1.0625rem] leading-tight font-semibold text-balance text-fg">
+        {system.name}
+      </h3>
 
-      {/* Acima do card clicável, para poder ser acionada de forma independente. */}
+      {/* Fora da vista, mas presente para leitor de tela. */}
+      {system.description && <span className="sr-only">{system.description}</span>}
+      <span className="sr-only">
+        {system.category_name ?? 'Outros'} ·{' '}
+        {system.type === 'indicator' ? 'Indicador' : 'Sistema'}
+      </span>
+
       <button
         type="button"
         onClick={handleFavorite}
         aria-pressed={favorite}
         aria-label={
-          favorite ? `Remover ${system.name} dos favoritos` : `Adicionar ${system.name} aos favoritos`
+          favorite
+            ? `Remover ${system.name} dos favoritos`
+            : `Adicionar ${system.name} aos favoritos`
         }
-        className={`hub-fav absolute top-1.5 right-1.5 z-20 grid h-10 w-10 place-items-center rounded-[var(--radius-sm)] transition-[color,opacity] ${
+        className={`hub-fav absolute top-2 right-2 z-20 grid h-11 w-11 place-items-center rounded-[var(--radius-md)] transition-[color,opacity] ${
           favorite ? 'text-accent' : 'text-subtle hover:text-accent'
         }`}
       >
         <Star
-          className={`h-4 w-4 ${pulso ? 'hub-pop' : ''}`}
+          className={`h-5 w-5 ${pulso ? 'hub-pop' : ''}`}
           strokeWidth={1.75}
           fill={favorite ? 'currentColor' : 'none'}
           aria-hidden="true"
         />
       </button>
 
-      <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-2.5">
-        <span className="flex min-w-0 items-center gap-1.5 text-[0.6875rem] font-medium text-subtle">
-          <span className="truncate">{system.category_name ?? 'Outros'}</span>
-          <span aria-hidden="true" className="text-line-strong">
-            ·
-          </span>
-          <span className="shrink-0">{isIndicator ? 'Indicador' : 'Sistema'}</span>
-        </span>
-
-        <button
-          type="button"
-          onClick={handleOpen}
-          disabled={isOpening}
-          className="hub-stretch z-10 inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-1.5 py-1 text-[0.8125rem] font-semibold text-primary transition-colors group-hover:text-primary-hover disabled:opacity-70"
-        >
+      {/* Ação principal: cobre o card inteiro, com a seta ancorada no canto. */}
+      <button
+        type="button"
+        onClick={handleOpen}
+        disabled={isOpening}
+        className="hub-stretch absolute right-3 bottom-3 z-10 grid h-9 w-9 place-items-center rounded-[var(--radius-md)] text-subtle transition-colors group-hover:text-primary disabled:opacity-70"
+      >
+        {isOpening ? (
+          <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
+        ) : (
           <ArrowUpRight
-            className="hub-arrow h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
-            strokeWidth={2.25}
+            className="hub-arrow h-4.5 w-4.5 transition-transform duration-200 group-hover:translate-x-px group-hover:-translate-y-px"
+            strokeWidth={2}
             aria-hidden="true"
           />
-          {isOpening ? 'Abrindo' : 'Acessar'}
-          <span className="sr-only"> {system.name} em nova aba</span>
-        </button>
-      </div>
+        )}
+        <span className="sr-only">Acessar {system.name} em nova aba</span>
+      </button>
 
       {error && (
-        <p role="alert" className="relative z-20 mt-2 text-xs font-medium text-danger">
+        <p role="alert" className="relative z-20 mt-3 text-xs font-medium text-danger">
           {error}
         </p>
       )}
