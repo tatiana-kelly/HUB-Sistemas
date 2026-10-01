@@ -6,7 +6,11 @@ import { createAdminClient, hasServiceRoleKey } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth'
 import { isSafeExternalUrl } from '@/lib/access'
 import { siteUrl } from '@/lib/env'
+import { BRAND_BUCKET, brandFileError, brandObjectName } from '@/lib/brand-upload'
+import { ROLE_ADMIN } from '@/lib/types'
 import type { ActionState } from '@/app/actions/auth'
+
+type Client = Awaited<ReturnType<typeof createClient>>
 
 /**
  * Ações de administração. Cada uma começa por requireAdmin(): a checagem de
@@ -35,6 +39,76 @@ function checkbox(formData: FormData, key: string): boolean {
 
 // ─── Sistemas ────────────────────────────────────────────────────────────────
 
+/**
+ * Envia a imagem escolhida no cadastro para o bucket `marcas` e devolve a URL
+ * pública. O upload usa o cliente do próprio administrador: quem autoriza é a
+ * política do Storage, não esta função.
+ */
+async function uploadBrand(
+  supabase: Client,
+  file: File,
+  systemName: string,
+): Promise<{ url?: string; error?: string }> {
+  const problema = brandFileError(file.type, file.size)
+  if (problema) return { error: problema }
+
+  const objeto = brandObjectName(systemName, file.type)
+  const { error } = await supabase.storage
+    .from(BRAND_BUCKET)
+    .upload(objeto, file, { contentType: file.type, upsert: false })
+
+  if (error) return { error: `Não foi possível enviar a imagem: ${error.message}` }
+
+  return { url: supabase.storage.from(BRAND_BUCKET).getPublicUrl(objeto).data.publicUrl }
+}
+
+/**
+ * Regrava quais perfis enxergam o sistema. O ADMIN entra sempre: foi a ausência
+ * dessa linha que fez um sistema recém-cadastrado aparecer no painel e recusar a
+ * abertura. Os demais perfis vêm das caixas marcadas no formulário.
+ */
+async function syncSystemRoles(
+  supabase: Client,
+  systemId: string,
+  selectedRoleIds: Set<string>,
+): Promise<string | null> {
+  const { data: roles, error } = await supabase
+    .from('roles')
+    .select('id, name')
+    .returns<{ id: string; name: string }[]>()
+
+  if (error) return `Não foi possível carregar os perfis: ${error.message}`
+
+  const liberar = (roles ?? []).filter(
+    (role) => role.name === ROLE_ADMIN || selectedRoleIds.has(role.id),
+  )
+  const revogar = (roles ?? []).filter(
+    (role) => role.name !== ROLE_ADMIN && !selectedRoleIds.has(role.id),
+  )
+
+  if (liberar.length > 0) {
+    const { error: grantError } = await supabase.from('role_system_permissions').upsert(
+      liberar.map((role) => ({ role_id: role.id, system_id: systemId, can_view: true })),
+      { onConflict: 'role_id,system_id' },
+    )
+    if (grantError) return `Não foi possível salvar as permissões: ${grantError.message}`
+  }
+
+  if (revogar.length > 0) {
+    const { error: revokeError } = await supabase
+      .from('role_system_permissions')
+      .delete()
+      .eq('system_id', systemId)
+      .in(
+        'role_id',
+        revogar.map((role) => role.id),
+      )
+    if (revokeError) return `Não foi possível remover permissões: ${revokeError.message}`
+  }
+
+  return null
+}
+
 export async function saveSystem(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin()
 
@@ -47,9 +121,20 @@ export async function saveSystem(_prev: ActionState, formData: FormData): Promis
 
   // A marca aceita caminho interno (/marcas/x.svg) ou URL http(s) — nunca um
   // esquema executável como javascript: ou data:.
-  const logoUrl = optionalText(formData, 'logo_url')
+  let logoUrl = optionalText(formData, 'logo_url')
   if (logoUrl && !logoUrl.startsWith('/') && !isSafeExternalUrl(logoUrl)) {
     return { error: 'A marca deve ser um caminho interno (/marcas/...) ou uma URL http(s).' }
+  }
+
+  const supabase = await createClient()
+
+  // Imagem enviada no próprio cadastro vence o endereço digitado: é a escolha
+  // mais recente e explícita de quem está preenchendo o formulário.
+  const file = formData.get('logo_file')
+  if (file instanceof File && file.size > 0) {
+    const enviada = await uploadBrand(supabase, file, name)
+    if (enviada.error) return { error: enviada.error }
+    logoUrl = enviada.url ?? logoUrl
   }
 
   const payload = {
@@ -64,16 +149,35 @@ export async function saveSystem(_prev: ActionState, formData: FormData): Promis
     active: checkbox(formData, 'active'),
   }
 
-  const supabase = await createClient()
-  const { error } = id
-    ? await supabase.from('systems').update(payload).eq('id', id)
-    : await supabase.from('systems').insert(payload)
+  let systemId = id
+  if (id) {
+    const { error } = await supabase.from('systems').update(payload).eq('id', id)
+    if (error) return { error: `Não foi possível salvar o sistema: ${error.message}` }
+  } else {
+    const { data, error } = await supabase
+      .from('systems')
+      .insert(payload)
+      .select('id')
+      .single<{ id: string }>()
 
-  if (error) return { error: `Não foi possível salvar o sistema: ${error.message}` }
+    if (error || !data) {
+      return { error: `Não foi possível salvar o sistema: ${error?.message ?? 'erro desconhecido'}` }
+    }
+    systemId = data.id
+  }
+
+  // O formulário sempre envia este marcador; sem ele, nada de permissão é
+  // tocado — uma chamada antiga não deve zerar os acessos de um sistema.
+  if (systemId && formData.get('permissions_form') === '1') {
+    const selected = new Set(formData.getAll('role_ids').map((value) => String(value)))
+    const permissionError = await syncSystemRoles(supabase, systemId, selected)
+    if (permissionError) return { error: permissionError }
+  }
 
   revalidatePath('/admin/systems')
+  revalidatePath('/admin/permissions')
   revalidatePath('/home')
-  return { success: id ? 'Sistema atualizado.' : 'Sistema criado.' }
+  return { success: id ? 'Sistema atualizado.' : 'Sistema criado e liberado para os perfis marcados.' }
 }
 
 export async function deleteSystem(_prev: ActionState, formData: FormData): Promise<ActionState> {

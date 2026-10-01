@@ -19,18 +19,32 @@ import {
   tdClass,
   thClass,
 } from '@/components/ui'
+import { BrandField } from '@/app/admin/systems/BrandField'
 import { deleteSystem, moveSystem, saveSystem, toggleSystemActive } from '@/app/actions/admin'
 import type { ActionState } from '@/app/actions/auth'
-import type { Category, SystemWithCategory } from '@/lib/types'
+import { ROLE_ADMIN } from '@/lib/types'
+import type { Category, Role, RoleSystemPermission, SystemWithCategory } from '@/lib/types'
 
 interface SystemsManagerProps {
   systems: SystemWithCategory[]
   categories: Category[]
+  roles: Role[]
+  permissions: RoleSystemPermission[]
 }
 
-export function SystemsManager({ systems, categories }: SystemsManagerProps) {
+export function SystemsManager({
+  systems,
+  categories,
+  roles,
+  permissions,
+}: SystemsManagerProps) {
   const [editing, setEditing] = useState<SystemWithCategory | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+
+  // Nome e URL são controlados porque a prévia da marca os acompanha enquanto
+  // a pessoa digita: o quadro mostra o favicon do domínio e o monograma reais.
+  const [nome, setNome] = useState('')
+  const [endereco, setEndereco] = useState('')
 
   const [saveState, saveAction] = useActionState<ActionState, FormData>(saveSystem, {})
   const [deleteState, deleteAction] = useActionState<ActionState, FormData>(deleteSystem, {})
@@ -44,9 +58,25 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
   const formOpen = isCreating || editing !== null
   const current = editing
 
+  /** Perfis que já enxergam o sistema em edição; no cadastro novo, nenhum. */
+  const perfisAtuais = new Set(
+    permissions
+      .filter((permission) => permission.can_view && permission.system_id === current?.id)
+      .map((permission) => permission.role_id),
+  )
+
+  function openForm(system: SystemWithCategory | null) {
+    setEditing(system)
+    setIsCreating(system === null)
+    setNome(system?.name ?? '')
+    setEndereco(system?.url ?? '')
+  }
+
   function closeForm() {
     setEditing(null)
     setIsCreating(false)
+    setNome('')
+    setEndereco('')
   }
 
   return (
@@ -62,7 +92,7 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
         ) : (
           <button
             type="button"
-            onClick={() => setIsCreating(true)}
+            onClick={() => openForm(null)}
             className={buttonClass('primary', 'sm')}
           >
             <Plus className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
@@ -93,7 +123,8 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
                 id="system-name"
                 name="name"
                 required
-                defaultValue={current?.name ?? ''}
+                value={nome}
+                onChange={(event) => setNome(event.target.value)}
                 className={inputClass}
               />
             </Field>
@@ -104,36 +135,27 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
                 name="url"
                 type="url"
                 required
-                defaultValue={current?.url ?? ''}
+                value={endereco}
+                onChange={(event) => setEndereco(event.target.value)}
                 className={inputClass}
               />
             </Field>
           </div>
 
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-            <Field label="Descrição" htmlFor="system-description">
-              <input
-                id="system-description"
-                name="description"
-                defaultValue={current?.description ?? ''}
-                className={inputClass}
-              />
-            </Field>
+          <Field label="Descrição" htmlFor="system-description">
+            <input
+              id="system-description"
+              name="description"
+              defaultValue={current?.description ?? ''}
+              className={inputClass}
+            />
+          </Field>
 
-            <Field
-              label="Marca (URL)"
-              htmlFor="system-logo"
-              hint="Opcional. Vazio usa o favicon do site e, se não houver, as iniciais."
-            >
-              <input
-                id="system-logo"
-                name="logo_url"
-                defaultValue={current?.logo_url ?? ''}
-                placeholder="/marcas/exemplo.svg"
-                className={inputClass}
-              />
-            </Field>
-          </div>
+          <BrandField
+            systemName={nome}
+            systemUrl={endereco}
+            defaultLogoUrl={current?.logo_url ?? ''}
+          />
 
           <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
             <Field label="Categoria" htmlFor="system-category">
@@ -191,6 +213,44 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
               />
             </Field>
           </div>
+
+          {/* Sem nenhuma linha de permissão o sistema não abre para ninguém —
+              nem para quem acabou de cadastrá-lo. Por isso a liberação é parte
+              do cadastro, e o ADMIN entra sempre. */}
+          <input type="hidden" name="permissions_form" value="1" />
+
+          <fieldset className="space-y-2">
+            <legend className="text-[0.8125rem] font-medium text-muted">Perfis com acesso</legend>
+
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {roles.map((role) => {
+                const fixo = role.name === ROLE_ADMIN
+                return (
+                  <label
+                    key={role.id}
+                    className={`flex items-center gap-2 text-[0.8125rem] font-medium ${
+                      fixo ? 'text-subtle' : 'text-muted'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="role_ids"
+                      value={role.id}
+                      defaultChecked={fixo || perfisAtuais.has(role.id)}
+                      disabled={fixo}
+                      className={checkboxClass}
+                    />
+                    {role.name}
+                    {fixo && <span className="text-xs font-normal">(sempre)</span>}
+                  </label>
+                )
+              })}
+            </div>
+
+            <p className="text-xs text-subtle">
+              Define quem vê o card no portal. Pode ser revisto depois em Permissões.
+            </p>
+          </fieldset>
 
           <label className="flex w-fit items-center gap-2 text-[0.8125rem] font-medium text-muted">
             <input
@@ -281,10 +341,7 @@ export function SystemsManager({ systems, categories }: SystemsManagerProps) {
                 <td className={`${tdClass} text-right whitespace-nowrap`}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsCreating(false)
-                      setEditing(system)
-                    }}
+                    onClick={() => openForm(system)}
                     className={buttonClass('secondary', 'sm')}
                   >
                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
